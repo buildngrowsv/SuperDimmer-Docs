@@ -146,7 +146,7 @@ WITHIN 12 MONTHS (After Release, Based on Traction)
 
 **Pre-Filing Checklist:**
 - [x] Check USPTO TESS database for conflicts
-- [ ] Check domain availability (superdimmer.app ✓)
+- [ ] Check domain availability (superdimmer.com ✓)
 - [ ] Search App Store for similar names
 - [ ] Consider international markets (WIPO Madrid System)
 

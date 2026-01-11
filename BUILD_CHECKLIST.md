@@ -1181,7 +1181,7 @@ xcodebuild -scheme SuperDimmer -configuration Release archive
 ---
 
 #### 6.3 Website & Purchase Flow
-- [x] Create landing page for superdimmer.app ✅ (Jan 8, 2026 - marketing website created)
+- [x] Create landing page for superdimmer.com ✅ (Jan 8, 2026 - marketing website created)
 - [ ] Deploy website to hosting (Cloudflare Pages recommended)
 - [ ] Integrate Paddle checkout
 - [ ] Set up license key delivery
