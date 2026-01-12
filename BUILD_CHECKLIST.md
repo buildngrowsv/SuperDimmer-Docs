@@ -1,6 +1,6 @@
 # SuperDimmer Build Checklist
 ## Step-by-Step Implementation Guide with Verification Checkpoints
-### Version 1.0 | January 7, 2026
+### Version 1.1 | January 12, 2026
 
 ---
 
@@ -653,6 +653,157 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 #### 2.12 Phase 2 Integration Testing
 
+### 2.12 Hidden App Overlay Cleanup ⬜ (NEW)
+
+> **BUG FIX**: When apps are hidden (Cmd+H), their overlays remain visible.
+> Overlay refresh should be triggered when an app is hidden to remove stale overlays.
+
+#### 2.12.1 Hidden App Detection
+- [ ] Add NSWorkspace observer for `didHideApplicationNotification`
+- [ ] Track hidden app bundle IDs in a set
+- [ ] When app is hidden, immediately remove all overlays for that app
+- [ ] When app is unhidden, trigger re-analysis to create overlays if needed
+
+#### 2.12.2 Overlay Manager Updates
+- [ ] Add `removeOverlaysForApp(bundleID:)` method to OverlayManager
+- [ ] Integrate hidden app observer with OverlayManager
+- [ ] Add `removeOverlaysForHiddenWindows()` to cleanup method
+- [ ] Call cleanup on app hide/unhide events, not just on timer
+
+#### 🔨 BUILD CHECK 2.12
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 2.12
+- [ ] Hide app (Cmd+H) → Overlays disappear immediately
+- [ ] Unhide app → Overlays reappear if content is bright
+- [ ] No orphaned overlays remain for hidden apps
+
+---
+
+### 2.13 Dynamic Overlay Tracking & Scaling ⬜ (NEW)
+
+> **PERFORMANCE FEATURE**: Overlays should follow window position and scale
+> in real-time without waiting for screenshot analysis (every 2 seconds).
+> This prevents visual lag when moving or resizing windows.
+
+#### 2.13.1 Window Position/Size Tracking
+- [ ] Add lightweight window tracking timer (0.1-0.2 second interval)
+- [ ] Track window frame changes via CGWindowListCopyWindowInfo
+- [ ] Compare current frame to last known frame for each tracked window
+- [ ] Update overlay position/size immediately on change detection
+- [ ] This is separate from the expensive screenshot-based brightness analysis
+
+#### 2.13.2 Overlay Layer Management
+- [ ] Ensure overlays are always layered correctly above their target windows
+- [ ] Add window level tracking per overlay (based on target window level)
+- [ ] When target window changes level, update overlay level immediately
+- [ ] Prevent 2-second delay before overlay appears above window after switch
+
+#### 2.13.3 Frame Change Response
+- [ ] Implement `updateOverlayFrames()` method (fast, no screenshot)
+- [ ] Call `updateOverlayFrames()` at high frequency (5-10 Hz)
+- [ ] Call full `performAnalysis()` at low frequency (0.5-2 Hz)
+- [ ] Animate overlay frame changes for smooth transitions
+
+#### 🔨 BUILD CHECK 2.13
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 2.13
+- [ ] Move window → Overlay follows in real-time (no lag)
+- [ ] Resize window → Overlay scales smoothly
+- [ ] Window z-order change → Overlay updates layer immediately
+- [ ] Performance: Light tracking adds minimal CPU overhead
+
+---
+
+### 2.14 Separate Window vs Zone Dimming Modes ⬜ (NEW)
+
+> **UX IMPROVEMENT**: Split "Intelligent Mode" into two clear options:
+> 1. Intelligent Window Dimming - dims entire windows based on brightness
+> 2. Intelligent Zone Dimming - dims specific bright areas within windows
+> Users should be able to enable one, the other, both, or neither independently.
+
+#### 2.14.1 Settings Updates
+- [ ] Rename `intelligentDimmingEnabled` to `intelligentWindowDimmingEnabled`
+- [ ] Add `intelligentZoneDimmingEnabled` setting
+- [ ] Both can be enabled independently
+- [ ] If neither enabled, use simple full-screen overlay mode
+
+#### 2.14.2 UI Updates
+- [ ] Replace single "Intelligent Mode" toggle with two separate toggles
+- [ ] "Intelligent Window Dimming" - dims bright windows
+- [ ] "Intelligent Zone Dimming" - dims bright areas in windows
+- [ ] Clear descriptions for each mode
+
+#### 2.14.3 Coordinator Updates
+- [ ] Update DimmingCoordinator to respect both settings independently
+- [ ] When window dimming enabled: analyze and dim whole windows
+- [ ] When zone dimming enabled: find bright regions within windows
+- [ ] When both enabled: combine (zone dimming within window dimming)
+
+#### 🔨 BUILD CHECK 2.14
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 2.14
+- [ ] Window dimming only → Whole windows dimmed
+- [ ] Zone dimming only → Only bright areas dimmed
+- [ ] Both enabled → Bright zones in all windows dimmed
+- [ ] Neither enabled → Full-screen overlay only
+
+---
+
+### 2.15 Expanded Exclusion Lists ⬜ (NEW)
+
+> **PRO FEATURE**: Different exclusion lists (or checkboxes) for different behaviors:
+> - Exclude from auto-hide
+> - Exclude from auto-minimize
+> - Exclude from dimming
+> Each app can have independent settings for each behavior.
+
+#### 2.15.1 Settings Updates
+- [ ] Keep existing `excludedAppBundleIDs` (for dimming)
+- [ ] Keep existing `autoHideExcludedApps` (for auto-hide)
+- [ ] Keep existing `autoMinimizeExcludedApps` (for auto-minimize)
+- [ ] Create unified `AppExclusion` struct with per-behavior flags
+- [ ] Add `appExclusions: [String: AppExclusion]` dictionary keyed by bundleID
+
+#### 2.15.2 AppExclusion Data Model
+- [ ] Create `AppExclusion` struct with:
+  - `excludeFromDimming: Bool`
+  - `excludeFromAutoHide: Bool`
+  - `excludeFromAutoMinimize: Bool`
+- [ ] Migration: Convert existing arrays to new format on first launch
+- [ ] Persist as JSON in UserDefaults
+
+#### 2.15.3 UI Updates
+- [ ] Create unified "Excluded Apps" tab in Preferences
+- [ ] Show list of apps with checkboxes for each exclusion type
+- [ ] Allow adding apps from running apps or Applications folder
+- [ ] Visual columns: App Name | Dimming | Auto-Hide | Auto-Minimize
+
+#### 🔨 BUILD CHECK 2.15
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 2.15
+- [ ] App excluded from dimming → Not dimmed, still auto-hides
+- [ ] App excluded from auto-hide → Dimmed, not auto-hidden
+- [ ] App excluded from all → No SuperDimmer actions
+- [ ] Migration from old format works
+
+---
+
 #### 🔨 BUILD CHECK - PHASE 2 FINAL
 ```bash
 xcodebuild -scheme SuperDimmer -configuration Release build
@@ -666,6 +817,8 @@ xcodebuild -scheme SuperDimmer -configuration Release build
 - [ ] Resize window → overlay tracks
 - [ ] Close window → overlay removed
 - [ ] Open new window → overlay created if bright
+- [ ] Hidden app → overlays removed
+- [ ] Window moved → overlay follows in real-time
 - [ ] Performance: CPU < 5% during active analysis
 - [ ] Performance: Memory < 50 MB with many overlays
 
@@ -673,6 +826,7 @@ xcodebuild -scheme SuperDimmer -configuration Release build
 - [ ] Dimming coordinator logic is clean
 - [ ] No memory leaks with overlay creation/destruction
 - [ ] Error handling for edge cases (hidden windows, etc.)
+- [ ] Overlay tracking is responsive
 
 ---
 
@@ -878,11 +1032,13 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
-#### 4.4 Wallpaper Dimming
-- [ ] Implement desktop-only overlay
-- [ ] Create overlay that sits above wallpaper but below windows
-- [ ] Add wallpaper dim amount setting
-- [ ] Wire to schedule system (optional)
+#### 4.4 Wallpaper Dimming ⬜ (ENHANCED)
+- [ ] Implement desktop-only overlay (sits below all windows)
+- [ ] Create overlay at window level `.desktop` or equivalent
+- [ ] Add wallpaper dim amount setting (0-80%)
+- [ ] Add wallpaper dim toggle to main menu bar UI
+- [ ] Wire to schedule system (dim wallpaper at night)
+- [ ] Support per-display wallpaper dimming
 
 #### 🔨 BUILD CHECK 4.4
 ```bash
@@ -891,9 +1047,10 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Build succeeds
 
 #### 🧪 TEST CHECK 4.4
-- [ ] Wallpaper dimmed, windows not affected
-- [ ] Dim level adjustable
-- [ ] Toggle enables/disables
+- [ ] Wallpaper dimmed, windows NOT affected
+- [ ] Dim level adjustable via slider
+- [ ] Toggle enables/disables immediately
+- [ ] Works on all connected displays
 
 ---
 
@@ -1114,6 +1271,122 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] All tabs navigate correctly
 - [ ] All settings save correctly
 - [ ] UI is beautiful and polished
+
+---
+
+### 5.9 Simplified Menu Bar UI ⬜ (NEW)
+
+> **UX IMPROVEMENT**: Move all adjustment sliders to Preferences.
+> Menu bar popover should be simple: toggles, status, and quick access.
+> This reduces overwhelm and makes the app easier to understand.
+
+#### 5.9.1 Menu Bar UI Simplification
+- [ ] Remove all sliders from MenuBarView (move to Preferences)
+- [ ] Keep only: Master toggle, Status indicator, Quick actions
+- [ ] Show summary of current settings (e.g., "Dimming: 25%, Threshold: 85%")
+- [ ] Add "Adjust Settings..." button that opens Preferences
+- [ ] Keep Temporary Disable section (important for quick access)
+- [ ] Keep Excluded Apps count (link to Preferences)
+
+#### 5.9.2 Menu Bar Quick Settings
+- [ ] Main dimming toggle (ON/OFF)
+- [ ] Color temperature toggle (ON/OFF)
+- [ ] Wallpaper dimming toggle (ON/OFF)
+- [ ] Dark/Light mode toggle (new)
+- [ ] Current status summary
+
+#### 5.9.3 New Menu Bar Icon ⬜ (NEW)
+- [ ] Design new icon (not sun - differentiate from other apps)
+- [ ] Options: moon, eye, contrast, brightness, spotlight
+- [ ] Create SF Symbol-based icon or custom asset
+- [ ] Add icon states: disabled, active, temperature active
+- [ ] Support both light and dark menu bar
+
+#### 🔨 BUILD CHECK 5.9
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 5.9
+- [ ] Menu bar popover is simpler
+- [ ] All settings accessible from Preferences
+- [ ] New icon is distinctive and clear
+- [ ] Quick toggles work correctly
+
+---
+
+### 5.10 Dark/Light Mode Support ⬜ (NEW)
+
+> **FEATURE**: Allow users to enable/disable SuperDimmer based on system appearance.
+> Options: Always On, Only in Light Mode, Only in Dark Mode, Follow System
+
+#### 5.10.1 Appearance Mode Settings
+- [ ] Add `appearanceMode` setting: always, lightOnly, darkOnly, system
+- [ ] When "lightOnly": disable dimming in dark mode automatically
+- [ ] When "darkOnly": disable dimming in light mode automatically
+- [ ] When "system": enable dimming regardless of appearance
+- [ ] Add appearance observer (NSApp.effectiveAppearance)
+
+#### 5.10.2 UI Updates
+- [ ] Add appearance mode picker to Preferences (General tab)
+- [ ] Add quick toggle in menu bar: "Dark Mode" / "Light Mode" / "Auto"
+- [ ] Show current appearance state in status
+
+#### 5.10.3 Appearance-Based Auto-Adjustments
+- [ ] Option to use different dim levels for light vs dark mode
+- [ ] Light mode: typically need more dimming (content is brighter)
+- [ ] Dark mode: typically need less dimming
+- [ ] User can configure different thresholds per mode
+
+#### 🔨 BUILD CHECK 5.10
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 5.10
+- [ ] "Light Only" mode disables dimming in dark mode
+- [ ] "Dark Only" mode disables dimming in light mode
+- [ ] Appearance toggle works
+- [ ] Different settings per mode work
+
+---
+
+### 5.11 Default Settings & Reset ⬜ (NEW)
+
+> **UX IMPROVEMENT**: Provide sensible defaults and easy reset option.
+> Users should be able to restore defaults without reinstalling.
+
+#### 5.11.1 Default Settings Profile
+- [ ] Document all default values in code comments
+- [ ] Create "Balanced" defaults that work for most users
+- [ ] Create "Aggressive" preset (more dimming, lower threshold)
+- [ ] Create "Subtle" preset (less dimming, higher threshold)
+- [ ] Add "Reset to Defaults" button in Preferences
+
+#### 5.11.2 Settings Presets
+- [ ] Add preset system: Balanced, Aggressive, Subtle, Custom
+- [ ] Save current settings as custom preset
+- [ ] Load preset with one click
+- [ ] Presets stored in UserDefaults
+
+#### 5.11.3 First Launch Defaults
+- [ ] Review and optimize first-launch experience
+- [ ] Dimming OFF by default (user must consciously enable)
+- [ ] Show recommended settings based on display brightness
+- [ ] Offer preset selection during onboarding
+
+#### 🔨 BUILD CHECK 5.11
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### 🧪 TEST CHECK 5.11
+- [ ] Reset to defaults works
+- [ ] Presets apply correctly
+- [ ] First launch shows sensible state
 
 ---
 
