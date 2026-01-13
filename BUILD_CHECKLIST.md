@@ -482,13 +482,43 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [x] Region overlays now created for bright regions across ALL windows
 - [x] Debug logging shows "Analyzing ALL N visible windows"
 
-#### 2.8.2 Feathered/Blurred Edges
-- [x] Added `edgeBlurEnabled` setting to SettingsManager
-- [x] Added `edgeBlurRadius` setting (5-50pt, default 15pt)
-- [x] Implemented `setEdgeBlur(enabled:radius:)` in DimOverlayWindow
-- [x] Created `createFeatheredMaskImage()` for soft edge gradient
-- [x] Updated OverlayManager to apply edge blur to region overlays
-- [x] Added "Soft Edges" toggle and slider to MenuBarView
+#### 2.8.2 Feathered/Blurred Edges (REMOVED - Use Rounded Corners Instead)
+- [x] ~~Added `edgeBlurEnabled` setting~~ (removed - unreliable)
+- [x] ~~Added `edgeBlurRadius` setting~~ (removed)
+- [x] ~~Implemented `setEdgeBlur(enabled:radius:)`~~ (stubbed - does nothing)
+- [x] ~~Created `createFeatheredMaskImage()`~~ (removed)
+- [x] ~~Updated OverlayManager to apply edge blur~~ (removed)
+- [x] ~~Added "Soft Edges" toggle~~ (removed from UI)
+
+> **NOTE**: Mask-based feathered edges caused visual artifacts during animations.
+> Replaced with simple corner radius (see 2.8.2b below).
+
+#### 2.8.2b Rounded Corners for Overlays (NEW)
+
+> **SIMPLER APPROACH**: Use `layer.cornerRadius` instead of complex mask.
+> Reliable, performant, looks cleaner than hard rectangular edges.
+
+- [ ] Add `overlayCornerRadius` setting to SettingsManager (0-20pt, default 8pt)
+- [ ] Apply `layer.cornerRadius` in DimOverlayWindow.setupDimView()
+- [ ] Set `layer.masksToBounds = true` to clip to rounded corners
+- [ ] Add corner radius slider to Preferences (Brightness tab)
+- [ ] Option to disable (set to 0) for sharp edges
+- [ ] Ensure corner radius works with debug borders
+
+#### BUILD CHECK 2.8.2b
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+
+#### TEST CHECK 2.8.2b
+- [ ] Overlays have rounded corners (default 8pt)
+- [ ] Corner radius slider adjusts roundness in real-time
+- [ ] Setting to 0 gives sharp corners
+- [ ] Rounded corners work with debug borders enabled
+- [ ] No visual artifacts during overlay animations
+- [ ] No visual artifacts during window resize
+- [ ] Performance unchanged (corner radius is GPU-accelerated)
 
 #### 2.8.3 Excluded Apps Feature
 - [x] Added `excludedAppBundleIDs` setting to SettingsManager
@@ -511,8 +541,8 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 #### 🧪 TEST CHECK 2.8
 - [x] Multiple windows are all analyzed in per-region mode
-- [ ] Soft edges toggle enables/disables feathered edges
-- [ ] Blur radius slider adjusts edge softness
+- [x] ~~Soft edges toggle~~ (removed - see 2.8.2b Rounded Corners)
+- [x] ~~Blur radius slider~~ (removed - see 2.8.2b Rounded Corners)
 - [ ] Excluded apps no longer get dimmed
 - [ ] No AttributeGraph cycle warnings in console
 
@@ -1583,5 +1613,6 @@ xcodebuild -scheme SuperDimmer -configuration Release archive -archivePath Super
 
 ---
 
-*Checklist Version: 1.0*
+*Checklist Version: 1.1*
 *Created: January 7, 2026*
+*Updated: January 12, 2026 - Added hidden app overlay cleanup, dynamic overlay tracking, separate window/zone dimming modes, expanded exclusion lists, simplified menu bar UI, dark/light mode support, default settings*
