@@ -1613,6 +1613,41 @@ xcodebuild -scheme SuperDimmer -configuration Release archive -archivePath Super
 
 ---
 
+## 🔧 TROUBLESHOOTING LOG
+
+### January 19, 2026 - Build Failure: UpdateChecker.swift Not Included in Xcode Project
+
+**Issue:**
+Build was failing with multiple "cannot find 'UpdateChecker' in scope" errors in:
+- MenuBarView.swift (lines 1108, 1116)
+- PreferencesView.swift (lines 225, 231)
+- SettingsManager.swift (line 491)
+- SuperDimmerApp.swift (line 119)
+
+**Root Cause:**
+The `UpdateChecker.swift` file existed in the `SuperDimmer/Services/` directory but was not included in the Xcode project file (`project.pbxproj`). This meant the Swift compiler couldn't find the class during compilation.
+
+**Solution:**
+Added `UpdateChecker.swift` to the Xcode project by editing `project.pbxproj`:
+1. Added PBXFileReference entry with ID `UC9876543210FEDCBA987654`
+2. Added file to Services group (PBXGroup section)
+3. Added PBXBuildFile entry with ID `UC1234567890ABCDEF123456`
+4. Added to Sources build phase (PBXSourcesBuildPhase section)
+
+**Verification:**
+```bash
+cd /Users/ak/UserRoot/Github/SuperDimmer/SuperDimmer-Mac-App
+xcodebuild -project SuperDimmer.xcodeproj -scheme SuperDimmer -configuration Release build
+# Result: BUILD SUCCEEDED ✅
+```
+
+**Lessons Learned:**
+- When adding new Swift files to the project via file system (not Xcode), they must be manually added to `project.pbxproj`
+- Always verify new service files are included in the build by checking for them in the project file
+- Use `grep UpdateChecker.swift project.pbxproj` to verify file is registered in the project
+
+---
+
 *Checklist Version: 1.1*
 *Created: January 7, 2026*
-*Updated: January 12, 2026 - Added hidden app overlay cleanup, dynamic overlay tracking, separate window/zone dimming modes, expanded exclusion lists, simplified menu bar UI, dark/light mode support, default settings*
+*Updated: January 19, 2026 - Fixed build failure by adding UpdateChecker.swift to Xcode project; Added troubleshooting log section*
