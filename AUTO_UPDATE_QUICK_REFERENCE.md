@@ -11,7 +11,7 @@
 │ ✅ appcast.xml file exists (needs real signatures)           │
 │ ✅ DMG files in releases/ folder                             │
 │ ✅ Release scripts for building DMG                          │
-│ ✅ Domain: superdimmer.app (assuming it's configured)        │
+│ ✅ Domain: superdimmer.com (assuming it's configured)        │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
@@ -96,8 +96,8 @@ cat > version.json << 'EOF'
 {
   "version": "1.0.1",
   "build": 7,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.1.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.1.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-19"
 }
@@ -138,7 +138,7 @@ GitHub (SuperDimmer-Website repo)
    ↓ (auto-deploy)
 Cloudflare Pages
    ↓ (HTTPS)
-https://superdimmer.app/
+https://superdimmer.com/
    ├── version.json
    ├── sparkle/appcast.xml
    └── releases/SuperDimmer-v1.0.1.dmg

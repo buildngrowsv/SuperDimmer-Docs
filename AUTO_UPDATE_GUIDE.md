@@ -52,8 +52,8 @@ xcodebuild -scheme SuperDimmer clean build
 {
   "version": "1.0.0",
   "build": 1,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.0.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.0.html"
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.0.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.0.html"
 }
 ```
 
@@ -136,7 +136,7 @@ git push
 → Add init() to SuperDimmerApp (Step 1)
 
 **Always says "Up to Date"**
-→ Check version.json actually deployed: `curl https://superdimmer.app/version.json`
+→ Check version.json actually deployed: `curl https://superdimmer.com/version.json`
 
 ---
 

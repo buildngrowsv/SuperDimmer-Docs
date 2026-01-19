@@ -153,8 +153,8 @@ From Menu Bar:
 {
   "version": "1.0.0",
   "build": 1,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.0.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.0.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.0.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.0.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-08"
 }
@@ -168,8 +168,8 @@ From Menu Bar:
 {
   "version": "1.0.0",
   "build": 1,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.0.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.0.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.0.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.0.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-08",
   "channel": "beta"
@@ -204,8 +204,8 @@ cat > version.json << 'EOF'
 {
   "version": "1.1.0",
   "build": 10,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.1.0.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.1.0.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.1.0.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.1.0.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-20"
 }
@@ -216,8 +216,8 @@ cat > version-beta.json << 'EOF'
 {
   "version": "1.1.0",
   "build": 10,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.1.0.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.1.0.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.1.0.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.1.0.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-20",
   "channel": "beta"
@@ -249,8 +249,8 @@ cat > version-beta.json << 'EOF'
 {
   "version": "1.2.0-beta1",
   "build": 15,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.2.0-beta1.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.2.0-beta1.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.2.0-beta1.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.2.0-beta1.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-19",
   "channel": "beta"

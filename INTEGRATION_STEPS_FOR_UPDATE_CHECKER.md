@@ -83,7 +83,7 @@ Run the app and watch Xcode console. You should see:
 
 ```
 🔍 UpdateChecker: Running automatic update check...
-   Fetching version.json from https://superdimmer.app/version.json
+   Fetching version.json from https://superdimmer.com/version.json
    HTTP 200
    📱 Current version: 1.0.1 (build 7)
    🌐 Remote version:  1.0.0 (build 1)
@@ -112,8 +112,8 @@ cat > version.json << 'EOF'
 {
   "version": "2.0.0",
   "build": 99,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.1.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.1.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-19"
 }
@@ -174,7 +174,7 @@ When you see "Update Available":
 ### Issue: Always shows "Up to Date" even with newer version.json
 
 **Solution:** 
-1. Check version.json is actually deployed (`curl https://superdimmer.app/version.json`)
+1. Check version.json is actually deployed (`curl https://superdimmer.com/version.json`)
 2. Check version string comparison (1.0.1 vs 1.0.0)
 3. Check console logs for HTTP errors
 

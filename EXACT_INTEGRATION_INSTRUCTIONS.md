@@ -201,7 +201,7 @@ Expected: No errors
 2. Check Xcode console - should see:
    ```
    🔍 UpdateChecker: Running automatic update check...
-      Fetching version.json from https://superdimmer.app/version.json
+      Fetching version.json from https://superdimmer.com/version.json
       HTTP 200
       📱 Current version: 1.0.1 (build 7)
       🌐 Remote version:  1.0.0 (build 1)
@@ -228,8 +228,8 @@ cat > version.json << 'EOF'
 {
   "version": "2.0.0",
   "build": 99,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.1.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.1.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-19"
 }
@@ -302,7 +302,7 @@ git push
 ### Runtime: Update check doesn't run
 **Solution:** Check console for errors. Verify version.json URL is accessible:
 ```bash
-curl https://superdimmer.app/version.json
+curl https://superdimmer.com/version.json
 ```
 
 ### Runtime: Alert doesn't show

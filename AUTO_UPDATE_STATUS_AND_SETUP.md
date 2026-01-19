@@ -120,7 +120,7 @@ final class UpdateChecker {
     
     /// URL to version.json on our Cloudflare-hosted website
     /// This file is automatically updated by our release script
-    private let versionURL = URL(string: "https://superdimmer.app/version.json")!
+    private let versionURL = URL(string: "https://superdimmer.com/version.json")!
     
     /// How often to check for updates (24 hours)
     private let checkInterval: TimeInterval = 86400
@@ -135,8 +135,8 @@ final class UpdateChecker {
     /// {
     ///   "version": "1.0.1",
     ///   "build": 7,
-    ///   "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg",
-    ///   "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.1.html",
+    ///   "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg",
+    ///   "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.1.html",
     ///   "minSystemVersion": "13.0",
     ///   "releaseDate": "2026-01-10"
     /// }
@@ -339,7 +339,7 @@ cd /Users/ak/UserRoot/Github/SuperDimmer/SuperDimmer-Mac-App
 xcodebuild -scheme SuperDimmer -configuration Release clean build
 
 # 2. Run it
-open build/Build/Products/Release/SuperDimmer.app
+open build/Build/Products/Release/superdimmer.com
 
 # 3. Click menu bar → Check for Updates
 # Should show "You're Up to Date" (since version.json still has 1.0.0)
@@ -358,8 +358,8 @@ cat > version.json << 'EOF'
 {
   "version": "1.0.1",
   "build": 7,
-  "downloadURL": "https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg",
-  "releaseNotesURL": "https://superdimmer.app/release-notes/v1.0.1.html",
+  "downloadURL": "https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg",
+  "releaseNotesURL": "https://superdimmer.com/release-notes/v1.0.1.html",
   "minSystemVersion": "13.0",
   "releaseDate": "2026-01-19"
 }
@@ -406,7 +406,7 @@ If you want automatic updates with one-click installation, here's what you need:
 3. **Update Info.plist:**
    ```xml
    <key>SUFeedURL</key>
-   <string>https://superdimmer.app/sparkle/appcast.xml</string>
+   <string>https://superdimmer.com/sparkle/appcast.xml</string>
    
    <key>SUPublicEDKey</key>
    <string>YOUR_PUBLIC_KEY_FROM_GENERATE_KEYS</string>
@@ -435,7 +435,7 @@ If you want automatic updates with one-click installation, here's what you need:
        <sparkle:version>7</sparkle:version>
        <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
        <enclosure 
-           url="https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg" 
+           url="https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg" 
            length="FILE_SIZE_IN_BYTES"
            sparkle:edSignature="SIGNATURE_FROM_SIGN_UPDATE=="/>
    </item>
@@ -452,7 +452,7 @@ GitHub Repo (SuperDimmer-Website)
     ↓ (auto-deploy on push)
 Cloudflare Pages
     ↓ (serves via HTTPS)
-https://superdimmer.app/
+https://superdimmer.com/
     ├── version.json           ← Simple updates check this
     ├── sparkle/
     │   └── appcast.xml        ← Sparkle checks this
@@ -546,7 +546,7 @@ cp SuperDimmer-v1.0.1.dmg SuperDimmer-Website/releases/
 git add . && git commit -m "Release v1.0.1" && git push
 ```
 
-Cloudflare serves it at `https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg` automatically.
+Cloudflare serves it at `https://superdimmer.com/releases/SuperDimmer-v1.0.1.dmg` automatically.
 
 ### "What needs to be set up for that?"
 
@@ -599,7 +599,7 @@ Cloudflare serves it at `https://superdimmer.app/releases/SuperDimmer-v1.0.1.dmg
    - Include update checklist
 
 4. **Verify Hosting**
-   - Ensure superdimmer.app domain works
+   - Ensure superdimmer.com domain works
    - Test DMG download speed
    - Confirm HTTPS certificate
 
