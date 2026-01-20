@@ -421,3 +421,89 @@ if decision.isActive {
 - Don't destroy/recreate objects rapidly - hide/show is more stable
 - Core Animation needs time - 0.1s delay is often not enough
 - Batch operations should be staggered when dealing with many objects
+
+---
+
+## [Jan 19, 2026] CRITICAL: CGWindowListCreateImage Obsolete on macOS 15+
+
+### Problem Description
+After implementing rounded corners feature (2.8.2b), user reported overlays not appearing.
+Initial investigation showed:
+- Logs indicated `permission=true`
+- But ALL window captures failing: `⚠️ Could not capture window`
+- `0 regions` detected every cycle
+- UI showing "Screen Recording Required" despite permission granted
+
+### Initial Hypothesis (WRONG)
+Thought it was a permission detection bug in PermissionManager using unreliable `CGPreflightScreenCaptureAccess()`.
+
+### Root Cause Discovery
+**macOS 26.1 has OBSOLETED `CGWindowListCreateImage` API** (deprecated since macOS 15.0)
+
+Evidence:
+```bash
+$ swift -e 'import CoreGraphics; CGWindowListCreateImage(...)'
+error: 'CGWindowListCreateImage' is unavailable in macOS: Please use ScreenCaptureKit instead.
+```
+
+The API still exists but **returns nil** on macOS 15+, breaking all screen capture functionality.
+
+### Why This Wasn't Caught Earlier
+1. App was likely developed/tested on macOS 14 or earlier
+2. `CGPreflightScreenCaptureAccess()` returns `true` (permission IS granted)
+3. But `CGWindowListCreateImage` silently fails (returns nil)
+4. Permission check passes, but actual captures fail
+
+### Immediate Fix Applied
+Fixed PermissionManager to use ScreenCaptureService's reliable permission check:
+```swift
+// OLD: Uses unreliable CGPreflightScreenCaptureAccess()
+func checkScreenRecordingPermission() -> Bool {
+    return CGPreflightScreenCaptureAccess()
+}
+
+// NEW: Uses ScreenCaptureService which does actual capture test
+func checkScreenRecordingPermission() -> Bool {
+    return ScreenCaptureService.shared.hasPermission
+}
+```
+
+This fixes the UI showing wrong permission status, but **doesn't fix the underlying capture failure**.
+
+### REQUIRED: Migration to ScreenCaptureKit
+
+**Status:** 🚨 BLOCKING ISSUE - App cannot capture windows on macOS 15+
+
+**What needs to be done:**
+1. Replace ALL `CGWindowListCreateImage` calls with ScreenCaptureKit
+2. ScreenCaptureKit uses async/await pattern (major refactor)
+3. Requires macOS 12.3+ minimum (currently 13.0, so OK)
+4. Different permission model (same entitlement, but different APIs)
+
+**Files requiring major refactoring:**
+- `ScreenCaptureService.swift` - Complete rewrite of capture methods
+- `BrightnessAnalysisEngine.swift` - May need async handling
+- `DimmingCoordinator.swift` - Update capture calls
+
+**ScreenCaptureKit Key Differences:**
+- Async/await instead of synchronous calls
+- `SCShareableContent` for window list
+- `SCStream` for continuous capture
+- `SCScreenshotManager` for one-shot captures
+- Better performance and privacy controls
+
+### Temporary Workaround
+None available - app is non-functional on macOS 15+ until migration complete.
+
+### Next Steps
+1. Research ScreenCaptureKit migration patterns
+2. Create new `ScreenCaptureServiceModern.swift` with SCK implementation
+3. Add version check to use old API on macOS 14-, new API on 15+
+4. Test thoroughly on both macOS versions
+5. Update minimum system version if needed
+
+### Learnings
+- Always check API availability against target macOS versions
+- Deprecation warnings in Xcode should be treated as critical
+- Test on latest macOS beta to catch breaking changes early
+- Apple's "obsolete" means "will return nil/fail silently"
