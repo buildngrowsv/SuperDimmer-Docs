@@ -163,6 +163,13 @@ This checklist addresses critical UX refinements for the Super Spaces HUD based 
   - [ ] Return "Desktop \(spaceNumber)" format
   - [ ] Handle up to 16 Spaces
 
+- [ ] Add character limit for Space names
+  - [ ] Define `maxSpaceNameLength` constant (e.g., 30 characters)
+  - [ ] Add validation in name setter
+  - [ ] Truncate names that exceed limit
+  - [ ] Show character counter in edit UI (e.g., "15/30")
+  - [ ] Prevent typing beyond limit in TextField
+
 - [ ] Update `getSpaceName(_:)` in `SuperSpacesHUDView`
   - [ ] Check if custom name exists in `settings.spaceNames`
   - [ ] If not, return `generateDefaultSpaceName(for: spaceNumber)`
@@ -178,6 +185,12 @@ This checklist addresses critical UX refinements for the Super Spaces HUD based 
   - [ ] Optional: Add "(default)" hint in edit mode
   - [ ] Ensure editing a default name saves it as custom
 
+- [ ] Add character limit enforcement in all edit UIs
+  - [ ] Inline editing in Note mode
+  - [ ] Card editing in Overview mode
+  - [ ] Show warning when approaching limit
+  - [ ] Visual feedback (red text) when at limit
+
 #### Build & Test:
 - [ ] 🔨 Build succeeds with no errors
 - [ ] 🧪 All Spaces show "Desktop 1", "Desktop 2", etc. by default
@@ -186,6 +199,10 @@ This checklist addresses critical UX refinements for the Super Spaces HUD based 
 - [ ] 🧪 Clearing a custom name reverts to default
 - [ ] 🧪 Default names don't clutter UserDefaults
 - [ ] 🧪 Works correctly for 1-16 Spaces
+- [ ] 🧪 Space names cannot exceed 30 characters
+- [ ] 🧪 Character counter shows in edit mode
+- [ ] 🧪 Cannot type beyond limit
+- [ ] 🧪 Visual feedback when approaching/at limit
 
 ---
 
@@ -489,6 +506,17 @@ The outline/faded artifact is likely caused by:
 1. NSPanel showing title bar chrome despite `titlebarAppearsTransparent = true`
 2. Missing `.borderless` in `styleMask`
 3. Safe area insets adding unwanted top padding
+
+### Character Limits:
+**Space Names**: 30 characters maximum
+- Rationale: Long enough for descriptive names ("Development & Testing")
+- Short enough to fit in buttons without excessive width
+- Prevents UI layout issues
+- Default names ("Desktop 1") are well within limit
+
+**Space Notes**: 500 characters maximum (already implemented)
+- Sufficient for reminders and quick notes
+- Prevents performance issues with large text
 
 ### Performance Considerations:
 - Overview mode with 16 Spaces showing 16 TextEditors could be heavy
