@@ -1796,7 +1796,143 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
-#### 5.5.8 Integration & Menu Bar Access ⬜
+#### 5.5.8 Dim to Indicate Order (Visit Recency Visualization) ⬜
+
+**Goal:** Progressive dimming based on Space visit order to create visual hierarchy
+
+**USER REQUIREMENT:**
+> "I need it to have a dim to indicate order toggle. This will set a scale from 0 to 50% divided by the number of spaces that exist and last opened space will have... Should be able to just set the dim at 25% by default for a space and when it is visited, it will be assigned a 0% dimming that then moves to the next step in the scale. So if 10 spaces, it's 5% at a time. So if I open super dimmer and I'm on space 5 it will set space 5 at 0% and other spaces at 25%. If I switch to space 4, it will set space 4 to 0% and space 5 to 5% dimming. Then if I go to space 6, it will switch space 5 to 10% and space 4 to 5%. So the last visited space is the lowest and current space is 0."
+
+**FEATURE CONCEPT:**
+- Spaces are dimmed based on recency of visit (most recent = least dimmed)
+- Current Space: 0% dimming (fully bright)
+- Last visited Space: 1 step dimmed (e.g., 5%)
+- Second-to-last visited: 2 steps dimmed (e.g., 10%)
+- And so on, up to a maximum dim level (default 25-50%)
+- Creates a visual "heat map" of your workflow
+
+**WHY THIS MATTERS:**
+- Provides instant visual feedback on which Spaces you've been using
+- Helps identify "stale" Spaces you haven't visited in a while
+- Creates natural visual hierarchy without manual configuration
+- Complements the existing inactivity decay feature (which is window-level)
+
+**Settings Storage:**
+```swift
+// Add to SettingsManager.swift
+@Published var spaceOrderDimmingEnabled: Bool = false  // Default OFF (opt-in)
+@Published var spaceOrderMaxDimLevel: Double = 0.25    // Max 25% dimming
+@Published var spaceOrderDimStep: Double = 0.05        // 5% per step (auto-calculated)
+```
+
+**Implementation Steps:**
+
+**5.5.8.1 Space Visit Tracking**
+- [ ] Create `SpaceVisitTracker.swift` service
+- [ ] Track visit order in array: `[currentSpace, lastVisited, secondToLast, ...]`
+- [ ] Update array when Space changes (detected by SpaceChangeMonitor)
+- [ ] Persist visit order to UserDefaults
+- [ ] Calculate dim level per Space based on position in array
+- [ ] Formula: `dimLevel = min(position * dimStep, maxDimLevel)`
+
+**5.5.8.2 Visual Dimming Application**
+- [ ] Add overlay system for Space-level dimming (separate from window dimming)
+- [ ] Create semi-transparent overlay per Space (or use existing overlay system)
+- [ ] Apply calculated dim level to each Space's overlay
+- [ ] Update dimming in real-time when Spaces are switched
+- [ ] Ensure dimming doesn't interfere with window-level dimming
+
+**5.5.8.3 Settings & UI**
+- [ ] Add "Dim to Indicate Order" toggle to Super Spaces quick settings
+- [ ] Add max dim level slider (10% - 50%, default 25%)
+- [ ] Add visual preview showing dim gradient
+- [ ] Show current visit order in debug mode (optional)
+- [ ] Add "Reset Visit Order" button to clear history
+
+**5.5.8.4 Integration with Super Spaces HUD**
+- [ ] Add visual indicator in HUD showing dim level per Space
+- [ ] Dim Space buttons in HUD to match their actual dimming
+- [ ] Add tooltip showing visit order (e.g., "Last visited 3 Spaces ago")
+- [ ] Update HUD in real-time as dimming changes
+
+**UI Mockup - Quick Settings:**
+```
+┌────────────────────────────────┐
+│ Super Spaces Settings          │
+├────────────────────────────────┤
+│ Display Mode: [Compact ▾]      │
+│ ☐ Auto-hide after switch       │
+│                                │
+│ ☑ Dim to Indicate Order        │
+│   Max Dimming: [25%]  ━━━━○━━  │
+│   (Current: 0%, Last: 5%)      │
+│                                │
+│ Position:                      │
+│ [TL] [TR] [BL] [BR]           │
+│                                │
+│ [Edit Space Names...]          │
+└────────────────────────────────┘
+```
+
+**HUD Visual Example (with dimming):**
+```
+Current Space (0%):   [●💻3]  ← Fully bright
+Last visited (5%):    [🌐2]   ← Slightly dimmed
+2nd-to-last (10%):    [📧1]   ← More dimmed
+3rd-to-last (15%):    [🎨4]   ← Even more dimmed
+Unvisited (25%):      [🎵5]   ← Max dimmed
+```
+
+**Technical Considerations:**
+- [ ] Decide: Apply dimming to entire Space or just HUD visualization?
+  - Option A: Visual indicator only (dim HUD buttons)
+  - Option B: Actually dim the Space desktop/windows (requires overlay system)
+  - **Recommendation:** Start with Option A (HUD only), add Option B later
+- [ ] Handle edge case: User has 20+ Spaces (dim step becomes very small)
+- [ ] Handle edge case: User disables feature mid-session (clear all dimming)
+- [ ] Performance: Ensure visit tracking doesn't add overhead to Space switching
+
+**Algorithm Example:**
+```
+Spaces: 10 total
+Max dim: 25%
+Dim step: 25% / 10 = 2.5% per step
+
+Visit order: [3, 2, 6, 1, 4, 5, 7, 8, 9, 10]
+             Current ↑
+
+Dimming:
+Space 3: 0% (current)
+Space 2: 2.5% (last visited)
+Space 6: 5% (2nd-to-last)
+Space 1: 7.5% (3rd-to-last)
+Space 4: 10% (4th-to-last)
+...
+Space 10: 25% (least recently visited)
+```
+
+#### 🔨 BUILD CHECK 5.5.8
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [ ] Build succeeds
+- [ ] SpaceVisitTracker compiles
+- [ ] Settings additions compile
+
+#### 🧪 TEST CHECK 5.5.8
+- [ ] Visit tracking updates correctly on Space change
+- [ ] Dim levels calculated correctly based on visit order
+- [ ] Current Space always at 0% dimming
+- [ ] Max dim level respected (doesn't exceed setting)
+- [ ] HUD buttons show appropriate dimming
+- [ ] Toggle enables/disables feature correctly
+- [ ] Visit order persists across app restart
+- [ ] Reset button clears visit history
+- [ ] Performance: No lag when switching Spaces
+
+---
+
+#### 5.5.9 Integration & Menu Bar Access ⬜
 
 **Goal:** Integrate Super Spaces into main app UI
 
@@ -1829,14 +1965,14 @@ Button(action: {
 .help("Show/hide Space switcher HUD")
 ```
 
-#### 🔨 BUILD CHECK 5.5.8
+#### 🔨 BUILD CHECK 5.5.9
 ```bash
 xcodebuild -scheme SuperDimmer -configuration Debug build
 ```
 - [ ] Build succeeds
 - [ ] Menu integration compiles
 
-#### 🧪 TEST CHECK 5.5.8
+#### 🧪 TEST CHECK 5.5.9
 - [ ] Menu item toggles HUD
 - [ ] Keyboard shortcut (Cmd+Shift+S) works
 - [ ] Preferences section shows
