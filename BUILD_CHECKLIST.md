@@ -1819,10 +1819,12 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 **Settings Storage:**
 ```swift
-// Add to SettingsManager.swift
+// Add to SettingsManager.swift (accessed via Super Spaces HUD quick settings)
 @Published var spaceOrderDimmingEnabled: Bool = false  // Default OFF (opt-in)
-@Published var spaceOrderMaxDimLevel: Double = 0.25    // Max 25% dimming
+@Published var spaceOrderMaxDimLevel: Double = 0.25    // Max 25% button fade
 @Published var spaceOrderDimStep: Double = 0.05        // 5% per step (auto-calculated)
+
+// Note: Settings are stored globally but UI is in SuperSpacesQuickSettings.swift
 ```
 
 **Implementation Steps:**
@@ -1844,12 +1846,14 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Update button appearance in real-time when Spaces are switched
 - [ ] Apply dimming to both Compact and Note display modes
 
-**5.5.8.3 Settings & UI**
-- [ ] Add "Dim to Indicate Order" toggle to Super Spaces quick settings
+**5.5.8.3 Settings & UI (Super Spaces HUD Quick Settings)**
+- [ ] Add "Dim to Indicate Order" toggle to SuperSpacesQuickSettings.swift
 - [ ] Add max dim level slider (10% - 50%, default 25%)
-- [ ] Add visual preview showing dim gradient
+- [ ] Settings are part of the HUD's quick settings popover (gear icon)
+- [ ] Add visual preview showing opacity gradient
 - [ ] Show current visit order in debug mode (optional)
 - [ ] Add "Reset Visit Order" button to clear history
+- [ ] Settings persist via SettingsManager but are accessed through HUD
 
 **5.5.8.4 Integration with Super Spaces HUD**
 - [ ] Apply opacity modifier to Space buttons based on visit order
@@ -1858,7 +1862,7 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Optional: Add tooltip showing visit order (e.g., "Last visited 3 Spaces ago")
 - [ ] Update button opacity in real-time when Spaces are switched
 
-**UI Mockup - Quick Settings:**
+**UI Mockup - Super Spaces HUD Quick Settings (Gear Icon Popover):**
 ```
 ┌────────────────────────────────┐
 │ Super Spaces Settings          │
@@ -1867,8 +1871,9 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 │ ☐ Auto-hide after switch       │
 │                                │
 │ ☑ Dim to Indicate Order        │
-│   Max Dimming: [25%]  ━━━━○━━  │
-│   (Current: 0%, Last: 5%)      │
+│   Button Fade: [25%]  ━━━━○━━  │
+│   (Current: bright, Last: 5%)  │
+│   [Reset Visit History]        │
 │                                │
 │ Position:                      │
 │ [TL] [TR] [BL] [BR]           │
@@ -1876,6 +1881,8 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 │ [Edit Space Names...]          │
 └────────────────────────────────┘
 ```
+
+**Location:** This setting is accessed via the gear/settings icon in the Super Spaces HUD, NOT in the main app Preferences window.
 
 **HUD Visual Example (button opacity based on visit order):**
 ```
