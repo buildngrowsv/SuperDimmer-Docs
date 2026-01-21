@@ -1835,12 +1835,14 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Calculate dim level per Space based on position in array
 - [ ] Formula: `dimLevel = min(position * dimStep, maxDimLevel)`
 
-**5.5.8.2 Visual Dimming Application**
-- [ ] Add overlay system for Space-level dimming (separate from window dimming)
-- [ ] Create semi-transparent overlay per Space (or use existing overlay system)
-- [ ] Apply calculated dim level to each Space's overlay
-- [ ] Update dimming in real-time when Spaces are switched
-- [ ] Ensure dimming doesn't interfere with window-level dimming
+**5.5.8.2 Visual Dimming Application (HUD Buttons Only)**
+- [ ] Apply opacity/dimming to Space buttons in SuperSpacesHUDView
+- [ ] Calculate opacity per button: `opacity = 1.0 - dimLevel`
+- [ ] Current Space: Full opacity (1.0)
+- [ ] Last visited: Slightly dimmed (0.95 opacity)
+- [ ] Older Spaces: Progressively more dimmed (down to 0.75 opacity)
+- [ ] Update button appearance in real-time when Spaces are switched
+- [ ] Apply dimming to both Compact and Note display modes
 
 **5.5.8.3 Settings & UI**
 - [ ] Add "Dim to Indicate Order" toggle to Super Spaces quick settings
@@ -1850,10 +1852,11 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Add "Reset Visit Order" button to clear history
 
 **5.5.8.4 Integration with Super Spaces HUD**
-- [ ] Add visual indicator in HUD showing dim level per Space
-- [ ] Dim Space buttons in HUD to match their actual dimming
-- [ ] Add tooltip showing visit order (e.g., "Last visited 3 Spaces ago")
-- [ ] Update HUD in real-time as dimming changes
+- [ ] Apply opacity modifier to Space buttons based on visit order
+- [ ] Use SwiftUI `.opacity()` modifier on button views
+- [ ] Add subtle visual feedback (e.g., less prominent = less recently used)
+- [ ] Optional: Add tooltip showing visit order (e.g., "Last visited 3 Spaces ago")
+- [ ] Update button opacity in real-time when Spaces are switched
 
 **UI Mockup - Quick Settings:**
 ```
@@ -1874,41 +1877,44 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 └────────────────────────────────┘
 ```
 
-**HUD Visual Example (with dimming):**
+**HUD Visual Example (button opacity based on visit order):**
 ```
-Current Space (0%):   [●💻3]  ← Fully bright
-Last visited (5%):    [🌐2]   ← Slightly dimmed
-2nd-to-last (10%):    [📧1]   ← More dimmed
-3rd-to-last (15%):    [🎨4]   ← Even more dimmed
-Unvisited (25%):      [🎵5]   ← Max dimmed
+Current Space:        [●💻3]  ← 100% opacity (fully bright)
+Last visited:         [🌐2]   ← 95% opacity (slightly faded)
+2nd-to-last:          [📧1]   ← 90% opacity (more faded)
+3rd-to-last:          [🎨4]   ← 85% opacity (even more faded)
+Least recent:         [🎵5]   ← 75% opacity (most faded)
 ```
 
+**Note:** Only the HUD buttons are dimmed, NOT the actual Spaces themselves.
+
 **Technical Considerations:**
-- [ ] Decide: Apply dimming to entire Space or just HUD visualization?
-  - Option A: Visual indicator only (dim HUD buttons)
-  - Option B: Actually dim the Space desktop/windows (requires overlay system)
-  - **Recommendation:** Start with Option A (HUD only), add Option B later
-- [ ] Handle edge case: User has 20+ Spaces (dim step becomes very small)
-- [ ] Handle edge case: User disables feature mid-session (clear all dimming)
+- **CLARIFICATION:** This feature only dims the HUD buttons, NOT the actual Spaces themselves
+- Dimming is purely visual feedback in the HUD interface
+- When you switch to a Space, it becomes current (full brightness in HUD)
+- No need for Space-level overlays or desktop dimming
+- [ ] Handle edge case: User has 20+ Spaces (opacity differences become subtle)
+- [ ] Handle edge case: User disables feature mid-session (reset all buttons to full opacity)
 - [ ] Performance: Ensure visit tracking doesn't add overhead to Space switching
+- [ ] Use SwiftUI's built-in `.opacity()` modifier for smooth animations
 
 **Algorithm Example:**
 ```
 Spaces: 10 total
-Max dim: 25%
-Dim step: 25% / 10 = 2.5% per step
+Max dim: 25% (translates to min opacity: 75%)
+Opacity step: 25% / 10 = 2.5% per step
 
 Visit order: [3, 2, 6, 1, 4, 5, 7, 8, 9, 10]
              Current ↑
 
-Dimming:
-Space 3: 0% (current)
-Space 2: 2.5% (last visited)
-Space 6: 5% (2nd-to-last)
-Space 1: 7.5% (3rd-to-last)
-Space 4: 10% (4th-to-last)
+Button Opacity (HUD only):
+Space 3: 100% opacity (current - fully bright)
+Space 2: 97.5% opacity (last visited - barely faded)
+Space 6: 95% opacity (2nd-to-last)
+Space 1: 92.5% opacity (3rd-to-last)
+Space 4: 90% opacity (4th-to-last)
 ...
-Space 10: 25% (least recently visited)
+Space 10: 75% opacity (least recently visited - most faded)
 ```
 
 #### 🔨 BUILD CHECK 5.5.8
