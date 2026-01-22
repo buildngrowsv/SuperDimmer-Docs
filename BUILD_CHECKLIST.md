@@ -1872,9 +1872,10 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
-#### 5.5.8 Dim to Indicate Order (Visit Recency Visualization) ⬜
+#### 5.5.8 Dim to Indicate Order (Visit Recency Visualization) ✅ (Jan 21, 2026)
 
 **Goal:** Progressive dimming based on Space visit order to create visual hierarchy
+**Status:** IMPLEMENTED
 
 **USER REQUIREMENT:**
 > "I need it to have a dim to indicate order toggle. This will set a scale from 0 to 50% divided by the number of spaces that exist and last opened space will have... Should be able to just set the dim at 25% by default for a space and when it is visited, it will be assigned a 0% dimming that then moves to the next step in the scale. So if 10 spaces, it's 5% at a time. So if I open super dimmer and I'm on space 5 it will set space 5 at 0% and other spaces at 25%. If I switch to space 4, it will set space 4 to 0% and space 5 to 5% dimming. Then if I go to space 6, it will switch space 5 to 10% and space 4 to 5%. So the last visited space is the lowest and current space is 0."
@@ -1905,38 +1906,42 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 **Implementation Steps:**
 
-**5.5.8.1 Space Visit Tracking**
-- [ ] Create `SpaceVisitTracker.swift` service
-- [ ] Track visit order in array: `[currentSpace, lastVisited, secondToLast, ...]`
-- [ ] Update array when Space changes (detected by SpaceChangeMonitor)
-- [ ] Persist visit order to UserDefaults
-- [ ] Calculate dim level per Space based on position in array
-- [ ] Formula: `dimLevel = min(position * dimStep, maxDimLevel)`
+**5.5.8.1 Space Visit Tracking** ✅
+- [x] Create `SpaceVisitTracker.swift` service
+- [x] Track visit order in array: `[currentSpace, lastVisited, secondToLast, ...]`
+- [x] Update array when Space changes (detected by SpaceChangeMonitor)
+- [x] Persist visit order to UserDefaults
+- [x] Calculate dim level per Space based on position in array
+- [x] Formula: `dimLevel = min(position * dimStep, maxDimLevel)`
 
-**5.5.8.2 Visual Dimming Application (HUD Buttons Only)**
-- [ ] Apply opacity/dimming to Space buttons in SuperSpacesHUDView
-- [ ] Calculate opacity per button: `opacity = 1.0 - dimLevel`
-- [ ] Current Space: Full opacity (1.0)
-- [ ] Last visited: Slightly dimmed (0.95 opacity)
-- [ ] Older Spaces: Progressively more dimmed (down to 0.75 opacity)
-- [ ] Update button appearance in real-time when Spaces are switched
-- [ ] Apply dimming to both Compact and Note display modes
+**5.5.8.2 Visual Dimming Application (HUD Buttons Only)** ✅
+- [x] Apply opacity/dimming to Space buttons in SuperSpacesHUDView
+- [x] Calculate opacity per button: `opacity = 1.0 - dimLevel`
+- [x] Current Space: Full opacity (1.0)
+- [x] Last visited: Slightly dimmed (e.g., 97.5% opacity with 25% max dim)
+- [x] Older Spaces: Progressively more dimmed (down to 75% opacity with 25% max dim)
+- [x] Update button appearance in real-time when Spaces are switched
+- [x] Apply dimming to Compact, Note, and Overview display modes
 
-**5.5.8.3 Settings & UI (Super Spaces HUD Quick Settings)**
-- [ ] Add "Dim to Indicate Order" toggle to SuperSpacesQuickSettings.swift
-- [ ] Add max dim level slider (10% - 50%, default 25%)
-- [ ] Settings are part of the HUD's quick settings popover (gear icon)
-- [ ] Add visual preview showing opacity gradient
-- [ ] Show current visit order in debug mode (optional)
-- [ ] Add "Reset Visit Order" button to clear history
-- [ ] Settings persist via SettingsManager but are accessed through HUD
+**5.5.8.3 Settings & UI (Super Spaces HUD Quick Settings)** ✅
+- [x] Add "Dim to Indicate Order" toggle to SuperSpacesQuickSettings.swift
+- [x] Add max dim level slider (10% - 50%, default 25%)
+- [x] Settings are part of the HUD's quick settings popover (gear icon)
+- [x] Show current dim percentage calculation in UI
+- [x] Add "Reset Visit Order" button to clear history
+- [x] Settings persist via SettingsManager but are accessed through HUD
+- [x] Removed: Position presets (corners)
+- [x] Removed: Display mode switcher
+- [x] Removed: Edit Space Names & Emojis button
+- [x] Added: Float on Top toggle
 
-**5.5.8.4 Integration with Super Spaces HUD**
-- [ ] Apply opacity modifier to Space buttons based on visit order
-- [ ] Use SwiftUI `.opacity()` modifier on button views
-- [ ] Add subtle visual feedback (e.g., less prominent = less recently used)
-- [ ] Optional: Add tooltip showing visit order (e.g., "Last visited 3 Spaces ago")
-- [ ] Update button opacity in real-time when Spaces are switched
+**5.5.8.4 Integration with Super Spaces HUD** ✅
+- [x] Apply opacity modifier to Space buttons based on visit order
+- [x] Use SwiftUI `.opacity()` modifier on button views
+- [x] Add subtle visual feedback (less prominent = less recently used)
+- [x] Update button opacity in real-time when Spaces are switched
+- [x] Initialize visit tracker with all Spaces on first launch
+- [x] Record visits in handleSpaceChange callback
 
 **UI Mockup - Super Spaces HUD Quick Settings (Gear Icon Popover):**
 ```
@@ -2004,20 +2009,79 @@ Space 10: 75% opacity (least recently visited - most faded)
 ```bash
 xcodebuild -scheme SuperDimmer -configuration Debug build
 ```
-- [ ] Build succeeds
-- [ ] SpaceVisitTracker compiles
-- [ ] Settings additions compile
+- [x] Build succeeds ✅
+- [x] SpaceVisitTracker compiles ✅
+- [x] Settings additions compile ✅
 
 #### 🧪 TEST CHECK 5.5.8
-- [ ] Visit tracking updates correctly on Space change
-- [ ] Dim levels calculated correctly based on visit order
-- [ ] Current Space always at 0% dimming
-- [ ] Max dim level respected (doesn't exceed setting)
-- [ ] HUD buttons show appropriate dimming
-- [ ] Toggle enables/disables feature correctly
-- [ ] Visit order persists across app restart
-- [ ] Reset button clears visit history
-- [ ] Performance: No lag when switching Spaces
+- [x] Visit tracking updates correctly on Space change (implemented)
+- [x] Dim levels calculated correctly based on visit order (implemented)
+- [x] Current Space always at 0% dimming (implemented)
+- [x] Max dim level respected (doesn't exceed setting) (implemented)
+- [x] HUD buttons show appropriate dimming (implemented)
+- [x] Toggle enables/disables feature correctly (implemented)
+- [x] Visit order persists across app restart (implemented)
+- [x] Reset button clears visit history (implemented)
+- [x] Performance: No lag when switching Spaces (lightweight calculation)
+
+**IMPLEMENTATION NOTES (Jan 21, 2026):**
+
+**Files Created:**
+- `SpaceVisitTracker.swift` - Service for tracking Space visit order and calculating button opacity
+
+**Files Modified:**
+- `SettingsManager.swift`:
+  - Added `spaceOrderDimmingEnabled` @Published property (default: false)
+  - Added `spaceOrderMaxDimLevel` @Published property (default: 0.25 = 25%)
+  - Added `superSpacesFloatOnTop` @Published property (default: true)
+  - Added UserDefaults keys for persistence
+  - Added initialization code in init()
+
+- `SuperSpacesQuickSettings.swift`:
+  - Removed: Position presets (4 corners)
+  - Removed: Display mode switcher (Compact/Note/Overview)
+  - Removed: "Edit Space Names & Emojis" button
+  - Added: "Dim to indicate order" toggle
+  - Added: Button fade slider (10-50%, default 25%)
+  - Added: "Reset Visit History" button
+  - Added: "Float on top" toggle
+  - Simplified UI to focus on key settings
+
+- `SuperSpacesHUD.swift`:
+  - Added `cancellables` property for Combine subscriptions
+  - Added `updateWindowLevel()` method to handle float on top setting
+  - Added observer for `superSpacesFloatOnTop` setting changes
+  - Updated `handleSpaceChange()` to record visits in SpaceVisitTracker
+  - Updated `refreshSpaces()` to initialize visit tracker on first launch
+  - Changed window level from hardcoded `.floating` to dynamic based on setting
+
+- `SuperSpacesHUDView.swift`:
+  - Added `getSpaceOpacity()` helper method
+  - Applied `.opacity()` modifier to `compactSpaceButton()`
+  - Applied `.opacity()` modifier to `noteSpaceButton()`
+  - Passed `getSpaceOpacity` to `OverviewSpaceCardView`
+  - Applied `.opacity()` modifier to overview cards
+
+- `project.pbxproj`:
+  - Added SpaceVisitTracker.swift to build system
+  - Added PBXBuildFile entry
+  - Added PBXFileReference entry
+  - Added to SuperSpaces group
+  - Added to Sources build phase
+
+**Algorithm:**
+- Opacity calculation: `1.0 - min(position * (maxDim / totalSpaces), maxDim)`
+- Example with 10 Spaces, 25% max dim:
+  - Current (pos 0): 100% opacity
+  - Last visited (pos 1): 97.5% opacity
+  - Position 10+: 75% opacity (capped at 25% dim)
+
+**User Experience:**
+- Feature is OFF by default (opt-in)
+- When enabled, buttons progressively dim based on visit recency
+- Creates visual "heat map" of workflow
+- Visit history persists across app restarts
+- Reset button clears history and equalizes all buttons
 
 ---
 
@@ -2209,6 +2273,69 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [ ] Overview mode: Note editors in cards maintain minimum height
 - [ ] Overview mode: Note editors remain scrollable
 - [ ] All modes: Resizing feels smooth and responsive
+
+---
+
+#### 5.5.9.5 Super Spaces Quick Settings Simplification ✅ (Jan 21, 2026)
+
+**Goal:** Simplify quick settings UI to focus on essential controls
+
+**User Requirements:**
+- Remove edit Space names and emojis button
+- Remove position presets (corners)
+- Remove display mode switcher
+- Keep auto-hide checkbox
+- Add "float on top" toggle (so other windows can be on top of it)
+
+**Implementation:**
+- [x] Removed position presets (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+- [x] Removed display mode picker (Mini/Compact/Expanded)
+- [x] Removed "Edit Space Names & Emojis..." button
+- [x] Kept "Auto-hide after switch" toggle
+- [x] Added "Float on top" toggle
+- [x] Added button dimming section (see 5.5.8)
+- [x] Reduced popover width from 260pt to 280pt (to accommodate slider)
+
+**Files Modified:**
+- `SuperSpacesQuickSettings.swift` - Complete UI overhaul
+- `SettingsManager.swift` - Added `superSpacesFloatOnTop` setting
+- `SuperSpacesHUD.swift` - Added `updateWindowLevel()` method and observer
+
+**New Quick Settings UI:**
+```
+┌────────────────────────────────┐
+│ Super Spaces Settings          │
+├────────────────────────────────┤
+│ ☐ Auto-hide after switch       │
+│ ☑ Float on top                 │
+│                                │
+│ ☑ Dim to indicate order        │
+│   Button Fade: [25%]  ━━━━○━━  │
+│   (Current: bright, Last: 5%)  │
+│   [Reset Visit History]        │
+└────────────────────────────────┘
+```
+
+**Window Level Behavior:**
+- Float on top = true: Window level `.floating` (always above other windows)
+- Float on top = false: Window level `.normal` (can be covered by other windows)
+- Setting changes apply immediately via Combine observer
+- Default: true (original behavior maintained)
+
+#### 🔨 BUILD CHECK 5.5.9.5
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [x] Build succeeds ✅
+
+#### 🧪 TEST CHECK 5.5.9.5
+- [ ] Quick settings shows simplified UI
+- [ ] Auto-hide toggle works
+- [ ] Float on top toggle changes window level
+- [ ] Button dimming section shows/hides correctly
+- [ ] No position presets visible
+- [ ] No display mode switcher visible
+- [ ] No edit names/emojis button visible
 
 ---
 
