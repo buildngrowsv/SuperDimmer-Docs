@@ -1955,6 +1955,21 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [x] Initialize visit tracker with all Spaces on first launch
 - [x] Record visits in handleSpaceChange callback
 
+**5.5.8.5 Progressive Dimming Algorithm Fix** ✅ (Jan 22, 2026)
+- [x] Fixed dimming to show clear visual hierarchy at each rank
+- [x] Changed from 50%→minOpacity range to 100%→minOpacity range
+- [x] Position 0 (current): 100% opacity (fully bright)
+- [x] Position 1 (last visited): ~97.5% opacity (still very bright)
+- [x] Each subsequent position: ~2.5% dimmer (for 10 Spaces with 25% max dim)
+- [x] Creates noticeable difference between each rank in display order
+- [x] Unvisited Spaces remain at 50% opacity (neutral state)
+
+**ISSUE FIXED:**
+Previously, all visited Spaces (positions 1+) started at 50% opacity and progressively dimmed down to minOpacity (e.g., 75% for 25% max dim). This created very subtle differences (~2.8% per position) that made all non-current Spaces look "the same level" visually.
+
+**NEW BEHAVIOR:**
+Now, visited Spaces start at 100% (same as current) and progressively dim with each rank. This creates a clear visual hierarchy where each position away from current is noticeably dimmer. The full 100%→75% range (for 25% max dim) provides much better visual distinction than the old 50%→75% range.
+
 **UI Mockup - Super Spaces HUD Quick Settings (Gear Icon Popover) - UPDATED:**
 ```
 ┌────────────────────────────────┐
@@ -2214,14 +2229,21 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [x] No linker errors ✅
 
 #### 🧪 TEST CHECK 5.5.9
-- [ ] Three mode buttons appear in HUD header
-- [ ] Active mode button is highlighted
-- [ ] Clicking mode button switches to that mode
-- [ ] Window resizes smoothly when switching modes
-- [ ] Window size is saved per mode
-- [ ] Saved sizes persist across app restarts
-- [ ] Default sizes used when no saved size exists
-- [ ] Window stays within min/max constraints
+- [x] Three mode buttons appear in HUD header ✅
+- [x] Active mode button is highlighted ✅
+- [x] Clicking mode button switches to that mode ✅
+- [x] Window resizes smoothly when switching modes ✅
+- [x] Window size is saved per mode ✅
+- [x] Saved sizes persist across app restarts ✅ (FIXED Jan 21, 2026)
+- [x] Default sizes used when no saved size exists ✅
+- [x] Window stays within min/max constraints ✅
+
+**CRITICAL FIX (Jan 21, 2026):**
+- Fixed window size persistence bug where saved sizes weren't being restored on app restart
+- Added `restoreSizeForMode()` call in `show()` method to restore saved size on initial display
+- Added `animated` parameter to `restoreSizeForMode()` to skip animation on initial load
+- Window now correctly restores to user's preferred size for the current mode after app restart
+- Size restoration happens before window is shown, providing seamless experience
 
 ---
 
