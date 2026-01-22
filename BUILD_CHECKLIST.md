@@ -2852,6 +2852,63 @@ xcodebuild -project SuperDimmer.xcodeproj -scheme SuperDimmer -configuration Deb
 
 ## 🔧 TROUBLESHOOTING LOG
 
+### January 21, 2026 - Release v1.0.3: Super Spaces HUD and Intelligent Features
+
+**Release Summary:**
+Successfully built and released version 1.0.3 (build 9) with major feature additions:
+- Super Spaces HUD with visual overview mode and per-space notes
+- Idle-aware timer pause for all decay features (progressive dimming, auto-hide, auto-minimize)
+- Progressive dimming based on window inactivity creating visual hierarchy
+- Responsive window sizing with preferences persistence per mode
+- Enhanced Overview mode layout with adaptive button sizing
+- Font size persistence across HUD modes
+
+**Files Updated:**
+- Info.plist: Version 1.0.3, Build 9
+- SuperDimmer-v1.0.3.dmg: 2,885,677 bytes
+- version.json: Updated to v1.0.3
+- appcast.xml: Added v1.0.3 entry
+- changelog.html: Added v1.0.3 release notes (marked as Latest)
+- release-notes/v1.0.3.html: Created comprehensive release notes page
+
+**Major Features:**
+- Super Spaces HUD: Revolutionary Space switcher with keyboard shortcuts and visual overview
+- Idle Detection: All timers pause when user is idle (30s threshold)
+- Progressive Dimming: Windows dim based on Space visit order and inactivity
+- Responsive UI: HUD remembers window size preferences for each mode
+- Per-Space Notes: Persistent notes for each macOS Space
+- Overview Mode: Grid view of all Spaces with adaptive columns (2-5 columns based on width)
+
+**Bug Fixes:**
+- Fixed Overview Mode TextEditor input issues (NSPanel activation)
+- Improved placeholder and cursor alignment in note editors
+- Fixed progressive dimming visual hierarchy for clear rank distinction
+
+**Performance:**
+- Optimized idle detection and timer management
+- Enhanced dimming algorithm with stronger visual range
+- Better memory management for HUD window sizing
+
+**Deployment:**
+- DMG created and copied to releases/ folder
+- All website files updated and committed
+- Pushed to GitHub - Cloudflare Pages auto-deployment triggered
+- Users will be notified via automatic update checker
+
+**Build Process:**
+```bash
+cd SuperDimmer-Website/packaging
+./release.sh 1.0.3 --skip-sign
+# Build succeeded in ~64 seconds
+# DMG created: 2.8MB
+```
+
+**Git Commits:**
+- Mac App: 67e633a "Release v1.0.3 - Super Spaces HUD and Intelligent Features"
+- Website: efebcf6 "Release v1.0.3 - Website Update"
+
+---
+
 ### January 19, 2026 - Release v1.0.2: Automatic Update System
 
 **Release Summary:**
