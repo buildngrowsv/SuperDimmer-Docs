@@ -1757,36 +1757,51 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 #### 5.5.6.5 Adaptive Button Sizing (Note Mode Selector) ✅
 
 **Current State:** Implemented and working (Jan 21, 2026)  
+**Last Updated:** Jan 21, 2026 - Made expansion more aggressive per user feedback  
 **Goal:** Make emoji buttons in note mode selector expand to show more information as window width increases
+
+**User Feedback & Updates:**
+- User requested: "Keep the number there all the time" - Number now always visible
+- User preference: "I rather have to scroll than not" - More aggressive expansion thresholds
+- Names can clip if needed - user prefers scrolling over not seeing names
 
 **Implementation Details:**
 - Buttons adapt based on available width using GeometryReader
-- Three display modes:
-  - **Compact (< 400px):** Emoji or number only (36pt width)
-  - **Medium (400-550px):** Number + emoji (60pt width)
-  - **Expanded (> 550px):** Number + emoji + name (80pt+ width)
+- Three display modes (UPDATED thresholds):
+  - **Compact (narrow):** Number only (44pt width) - no emoji
+  - **Medium (≥50px/button):** Number + emoji (60pt width) - lowered from 60px
+  - **Expanded (≥70px/button):** Number + emoji + name (80pt+ width) - lowered from 100px
+- **Always shows number** in all modes (user requirement)
+- More generous expansion - prefers showing info even if it requires scrolling
 - Smooth transitions between modes as window is resized
 - Note indicators (orange dots) always visible in all modes
 - Maintains equal spacing and alignment across all modes
 
 **Files Modified:**
-- [x] `SuperSpacesHUDView.swift` - Added adaptive sizing logic
+- [x] `SuperSpacesHUDView.swift` - Added adaptive sizing logic (UPDATED Jan 21)
   - Added `noteSelectorWidth` state variable to track container width
   - Added `NoteButtonMode` enum (compact, medium, expanded)
   - Modified `noteDisplayView` to use GeometryReader for width tracking
   - Updated `noteSpaceButton()` to accept `availableWidth` parameter
+  - **UPDATED:** Now always shows number in all modes
+  - **UPDATED:** More aggressive thresholds (70px and 50px instead of 100px and 60px)
+  - **UPDATED:** Compact mode shows number only (no emoji)
   - Added `getNoteButtonMode()` to calculate mode based on width
   - Added `getNoteButtonWidth()` to return minimum width per mode
 
 **Visual Demo:**
 - [x] Created HTML interactive demo: `SuperSpacesHUDView-adaptive-buttons-demo.html`
+- **UPDATED:** Demo now reflects new behavior (always show number, aggressive expansion)
 - Demo shows real-time button expansion as window width changes
 - Includes slider to test different window widths (300-800px)
+- Updated thresholds and logic to match Swift implementation
 
 **User Experience:**
-- Window starts at default width (480px) showing medium mode
-- User can resize window wider → buttons expand to show full names
-- User can resize window narrower → buttons compact to save space
+- **Number always visible** - user can always see which Space is which
+- Window starts at default width (480px) showing medium mode (number + emoji)
+- User can resize window wider → buttons expand to show full names **more aggressively**
+- User can resize window narrower → buttons show number only (no emoji in compact mode)
+- **Prefers expansion over compactness** - names shown even if they require scrolling
 - Responsive design adapts naturally to user's preferred window size
 - No configuration needed - works automatically
 
