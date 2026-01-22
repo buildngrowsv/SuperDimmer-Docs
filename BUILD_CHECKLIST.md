@@ -578,7 +578,7 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
-### 2.10 Inactivity Decay Dimming (WINDOW-LEVEL)
+### 2.10 Inactivity Decay Dimming (WINDOW-LEVEL) ✅
 
 > **UNIQUE FEATURE** - Progressive dimming for windows that are not in use
 > Windows that haven't been switched to will gradually increase in dimness over time
@@ -588,6 +588,9 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 > **Why this matters:** When you have many windows open, the ones you haven't used
 > recently naturally fade more, helping you focus on what's active while keeping
 > background windows accessible but less distracting.
+>
+> **IDLE PAUSE (Jan 22, 2026):** Decay timers now pause when user is idle.
+> This prevents windows from dimming due to time spent away from computer.
 
 #### 2.10.1 Decay Dimming Settings ✅ (Jan 8, 2026)
 - [x] Add `inactivityDecayEnabled` setting to SettingsManager
@@ -602,6 +605,7 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [x] Update timestamp when window becomes active (frontmost app's windows)
 - [x] Calculate `timeSinceLastActive` for each tracked window
 - [x] Register/cleanup windows during analysis cycle
+- [x] **IDLE PAUSE (Jan 22, 2026):** Inactivity calculation excludes idle periods
 
 #### 2.10.3 Decay Dimming Logic in Coordinator ✅ (Jan 8, 2026)
 - [x] Add `applyInactivityDecay()` method to DimmingCoordinator
@@ -623,13 +627,14 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 ```
 - [x] Build succeeds
 
-#### 🧪 TEST CHECK 2.10
-- [ ] Window starts decaying after delay when inactive
-- [ ] Decay respects rate setting (gradual increase)
-- [ ] Decay stops at max level (doesn't go darker)
-- [ ] Switching to window resets decay immediately
-- [ ] Decay settings persist across restart
-- [ ] Performance: Decay tracking adds minimal overhead
+#### 🧪 TEST CHECK 2.10 ✅
+- [x] Window starts decaying after delay when inactive
+- [x] Decay respects rate setting (gradual increase)
+- [x] Decay stops at max level (doesn't go darker)
+- [x] Switching to window resets decay immediately
+- [x] Decay settings persist across restart
+- [x] Performance: Decay tracking adds minimal overhead
+- [x] **IDLE PAUSE (Jan 22, 2026):** Decay pauses when user is idle
 
 ---
 
@@ -2439,6 +2444,66 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
+#### 5.5.9.6 Font Size Persistence (Cmd+/Cmd-) ✅ (Jan 22, 2026)
+
+**Goal:** Save user's text size preference across app restarts
+
+**Problem:** 
+Users could adjust HUD text size with Cmd+ and Cmd- shortcuts, but the preference was not saved. Every time the app relaunched, text size reset to default (100%).
+
+**Solution:**
+Moved font size multiplier from local SuperSpacesViewModel property to SettingsManager for automatic UserDefaults persistence.
+
+**Implementation:**
+- [x] Added `superSpacesFontSizeMultiplier` key to SettingsManager.Keys enum
+- [x] Added `@Published var superSpacesFontSizeMultiplier: CGFloat` to SettingsManager
+- [x] Added initialization in SettingsManager.init (loads from UserDefaults, defaults to 1.0)
+- [x] Added reset in SettingsManager.resetToDefaults()
+- [x] Updated SuperSpacesViewModel.fontSizeMultiplier to be computed property that reads/writes SettingsManager
+- [x] Updated increase/decreaseFontSize() methods to trigger objectWillChange for SwiftUI updates
+- [x] Added copious comments explaining persistence architecture
+
+**Files Modified:**
+- `SettingsManager.swift`:
+  - Added `superSpacesFontSizeMultiplier` key (line ~467)
+  - Added `@Published var superSpacesFontSizeMultiplier` property with didSet (line ~1883)
+  - Added initialization from UserDefaults (line ~2295)
+  - Added reset to 1.0 in resetToDefaults() (line ~3062)
+- `SuperSpacesHUD.swift`:
+  - Changed `fontSizeMultiplier` from @Published to computed property
+  - Now reads from/writes to SettingsManager.shared.superSpacesFontSizeMultiplier
+  - Added objectWillChange.send() for SwiftUI reactivity
+  - Updated print statements to indicate "(persisted)"
+
+**Technical Details:**
+- Range: 0.8 (80%) to 1.5 (150%)
+- Increment: 0.1 (10%) per Cmd+/Cmd- press
+- Default: 1.0 (100% - normal size)
+- Storage: CGFloat in UserDefaults (stored as Double)
+- Applies to: All text in HUD via scaledFontSize() helper function
+
+**Why This Matters:**
+- **Accessibility:** Vision-impaired users can set larger text once and it persists
+- **User Preference:** Power users who prefer compact UI can set smaller text permanently
+- **Consistency:** Text size preference maintained across app restarts and system reboots
+- **Expected Behavior:** Standard macOS pattern - user preferences should persist
+
+#### 🔨 BUILD CHECK 5.5.9.6
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [x] Build succeeds ✅ (Jan 22, 2026)
+
+#### 🧪 TEST CHECK 5.5.9.6
+- [ ] Open HUD, press Cmd+ several times → text gets larger
+- [ ] Press Cmd- several times → text gets smaller
+- [ ] Quit app completely (Cmd+Q)
+- [ ] Relaunch app
+- [ ] Open HUD → text size should match what it was before quit
+- [ ] Reset to defaults in Preferences → font size resets to 100%
+
+---
+
 #### 5.5.10 Integration & Menu Bar Access ⬜
 
 **Goal:** Integrate Super Spaces into main app UI
@@ -2690,6 +2755,76 @@ xcodebuild -scheme SuperDimmer -configuration Release archive -archivePath Super
 - [ ] Respond to all support requests
 - [ ] Gather feature requests
 - [ ] Plan v1.1 based on feedback
+
+---
+
+### 2.13 Idle-Aware Timer Pause for All Features ✅ (Jan 22, 2026)
+
+> **CRITICAL FIX** - All timed decay features now pause when user is idle
+> This prevents windows from dimming and apps from being hidden due to time
+> spent away from the computer (lunch, meetings, overnight, etc.).
+>
+> **Why this matters:** Without idle detection, users would come back from breaks
+> to find everything heavily dimmed or hidden, even though they weren't actively
+> ignoring those windows - they were just away. This fix ensures timers only
+> count time during active computer use.
+
+#### 2.13.1 Idle Detection Infrastructure ✅
+- [x] `ActiveUsageTracker.swift` already implemented (Jan 8, 2026)
+- [x] Tracks mouse movement, keyboard input, scroll wheel
+- [x] Considers user "idle" after 30 seconds of no activity
+- [x] Publishes `isUserActive` property for reactive updates
+- [x] Posts notification when user returns from extended idle
+
+#### 2.13.2 WindowInactivityTracker Idle Pause ✅ (Jan 22, 2026)
+- [x] Subscribe to `ActiveUsageTracker.isUserActive` property
+- [x] Record timestamp when user becomes idle (`idleSinceTime`)
+- [x] In `getInactivityDuration()`: exclude idle time from calculation
+- [x] When user is idle: calculate time up to idle start, not current time
+- [x] When user returns: clear idle timestamp and resume normal calculation
+- [x] Add debug logging for idle state changes
+- [x] Works alongside space-aware freezing (both features independent)
+
+#### 2.13.3 AppInactivityTracker Idle Pause ✅ (Jan 22, 2026)
+- [x] Changed from simple timestamp to accumulated inactivity time
+- [x] Added `accumulatedInactivityTime` field to `AppActivityInfo`
+- [x] Created accumulation timer (runs every 10 seconds)
+- [x] Timer only adds time when user is actively using computer
+- [x] Subscribe to `ActiveUsageTracker.isUserActive` property
+- [x] When user becomes idle: stop accumulating time
+- [x] When user returns: resume accumulation
+- [x] Add debug logging for idle state changes
+
+#### 2.13.4 AutoMinimizeManager Idle Pause ✅ (Already Implemented Jan 8, 2026)
+- [x] Already uses `ActiveUsageTracker.getIsUserActive()` in update loop
+- [x] Only accumulates active time when user is active
+- [x] Observes `.userReturnedFromExtendedIdle` notification
+- [x] Resets all window timers when user returns from extended idle
+- [x] No changes needed - already working correctly
+
+#### 🔨 BUILD CHECK 2.13 ✅
+```bash
+cd /Users/ak/UserRoot/Github/SuperDimmer/SuperDimmer-Mac-App
+xcodebuild -project SuperDimmer.xcodeproj -scheme SuperDimmer -configuration Debug clean build
+```
+- [x] Build succeeds with no errors
+- [x] No warnings related to idle tracking
+
+#### 🧪 TEST CHECK 2.13 ✅
+- [x] Decay dimming pauses when user is idle (no mouse/keyboard for 30s)
+- [x] Auto-hide pauses when user is idle
+- [x] Auto-minimize pauses when user is idle (already working)
+- [x] Debug logs show idle state changes ("User idle - pausing timers")
+- [x] Debug logs show resume ("User active - resuming timers")
+- [x] Timers resume correctly when user returns
+- [x] No accumulated time during idle periods
+
+#### 👀 REVIEW POINT 2.13 ✅
+- [x] All three features (decay, auto-hide, auto-minimize) respect idle state
+- [x] Idle detection is consistent across all features (30s threshold)
+- [x] Debug logging is clear and helpful
+- [x] No performance impact from idle tracking
+- [x] Thread-safe implementation with proper locking
 
 ---
 
