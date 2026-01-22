@@ -1898,11 +1898,18 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 ```swift
 // Add to SettingsManager.swift (accessed via Super Spaces HUD quick settings)
 @Published var spaceOrderDimmingEnabled: Bool = false  // Default OFF (opt-in)
-@Published var spaceOrderMaxDimLevel: Double = 0.25    // Max 25% button fade
+@Published var spaceOrderMaxDimLevel: Double = 0.5     // Max 50% button fade (default)
+                                                       // Range: 0.1 (10%) to 0.8 (80%)
 @Published var spaceOrderDimStep: Double = 0.05        // 5% per step (auto-calculated)
 
 // Note: Settings are stored globally but UI is in SuperSpacesQuickSettings.swift
 ```
+
+**USER FEEDBACK (Jan 21, 2026):**
+- Original 25% max fade was too subtle and hard to read
+- Increased range to 80% for much stronger visual indicator
+- Increased default to 50% for better visibility
+- Slider now shows "Subtle" to "Strong" labels
 
 **Implementation Steps:**
 
@@ -1943,35 +1950,51 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 - [x] Initialize visit tracker with all Spaces on first launch
 - [x] Record visits in handleSpaceChange callback
 
-**UI Mockup - Super Spaces HUD Quick Settings (Gear Icon Popover):**
+**UI Mockup - Super Spaces HUD Quick Settings (Gear Icon Popover) - UPDATED:**
 ```
 ┌────────────────────────────────┐
 │ Super Spaces Settings          │
 ├────────────────────────────────┤
-│ Display Mode: [Compact ▾]      │
 │ ☐ Auto-hide after switch       │
-│                                │
-│ ☑ Dim to Indicate Order        │
-│   Button Fade: [25%]  ━━━━○━━  │
-│   (Current: bright, Last: 5%)  │
+│ ☑ Float on top                 │
+├────────────────────────────────┤
+│ ☑ Dim to indicate order        │
+│   Button Fade: [50%]  ━━━━━○━━ │
+│   Subtle ←──────────→ Strong   │
+│   Oldest Space: 50% visible    │
 │   [Reset Visit History]        │
-│                                │
-│ Position:                      │
-│ [TL] [TR] [BL] [BR]           │
-│                                │
-│ [Edit Space Names...]          │
 └────────────────────────────────┘
 ```
 
+**Changes from Original Design:**
+- Removed: Display Mode picker
+- Removed: Position presets (4 corners)
+- Removed: "Edit Space Names..." button
+- Added: "Float on top" toggle
+- Updated: Slider range 10-80% (was 10-50%)
+- Updated: Default 50% (was 25%)
+- Updated: Better labels and feedback
+
 **Location:** This setting is accessed via the gear/settings icon in the Super Spaces HUD, NOT in the main app Preferences window.
 
-**HUD Visual Example (button opacity based on visit order):**
+**HUD Visual Example (button opacity based on visit order) - UPDATED:**
+
+**With 50% max dim (DEFAULT):**
 ```
 Current Space:        [●💻3]  ← 100% opacity (fully bright)
-Last visited:         [🌐2]   ← 95% opacity (slightly faded)
-2nd-to-last:          [📧1]   ← 90% opacity (more faded)
-3rd-to-last:          [🎨4]   ← 85% opacity (even more faded)
-Least recent:         [🎵5]   ← 75% opacity (most faded)
+Last visited:         [🌐2]   ← 90% opacity (10% faded)
+2nd-to-last:          [📧1]   ← 80% opacity (20% faded)
+3rd-to-last:          [🎨4]   ← 70% opacity (30% faded)
+Least recent:         [🎵5]   ← 50% opacity (50% faded - noticeable!)
+```
+
+**With 80% max dim (STRONG INDICATOR):**
+```
+Current Space:        [●💻3]  ← 100% opacity (fully bright)
+Last visited:         [🌐2]   ← 84% opacity (16% faded)
+2nd-to-last:          [📧1]   ← 68% opacity (32% faded)
+3rd-to-last:          [🎨4]   ← 52% opacity (48% faded)
+Least recent:         [🎵5]   ← 20% opacity (80% faded - very obvious!)
 ```
 
 **Note:** Only the HUD buttons are dimmed, NOT the actual Spaces themselves.
@@ -1986,23 +2009,35 @@ Least recent:         [🎵5]   ← 75% opacity (most faded)
 - [ ] Performance: Ensure visit tracking doesn't add overhead to Space switching
 - [ ] Use SwiftUI's built-in `.opacity()` modifier for smooth animations
 
-**Algorithm Example:**
+**Algorithm Example (UPDATED - 50% default):**
 ```
 Spaces: 10 total
-Max dim: 25% (translates to min opacity: 75%)
-Opacity step: 25% / 10 = 2.5% per step
+Max dim: 50% (translates to min opacity: 50%)
+Opacity step: 50% / 10 = 5% per step
 
 Visit order: [3, 2, 6, 1, 4, 5, 7, 8, 9, 10]
              Current ↑
 
 Button Opacity (HUD only):
 Space 3: 100% opacity (current - fully bright)
-Space 2: 97.5% opacity (last visited - barely faded)
-Space 6: 95% opacity (2nd-to-last)
-Space 1: 92.5% opacity (3rd-to-last)
-Space 4: 90% opacity (4th-to-last)
+Space 2: 95% opacity (last visited - noticeable fade)
+Space 6: 90% opacity (2nd-to-last)
+Space 1: 85% opacity (3rd-to-last)
+Space 4: 80% opacity (4th-to-last)
 ...
-Space 10: 75% opacity (least recently visited - most faded)
+Space 10: 50% opacity (least recently visited - clearly faded)
+```
+
+**With 80% max dim (for strong indicator):**
+```
+Button Opacity (HUD only):
+Space 3: 100% opacity (current - fully bright)
+Space 2: 92% opacity (last visited)
+Space 6: 84% opacity (2nd-to-last)
+Space 1: 76% opacity (3rd-to-last)
+Space 4: 68% opacity (4th-to-last)
+...
+Space 10: 20% opacity (least recently visited - very obvious!)
 ```
 
 #### 🔨 BUILD CHECK 5.5.8
