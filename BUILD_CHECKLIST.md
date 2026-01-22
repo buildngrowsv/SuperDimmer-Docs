@@ -1754,6 +1754,67 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
+#### 5.5.6.5 Adaptive Button Sizing (Note Mode Selector) ✅
+
+**Current State:** Implemented and working (Jan 21, 2026)  
+**Goal:** Make emoji buttons in note mode selector expand to show more information as window width increases
+
+**Implementation Details:**
+- Buttons adapt based on available width using GeometryReader
+- Three display modes:
+  - **Compact (< 400px):** Emoji or number only (36pt width)
+  - **Medium (400-550px):** Number + emoji (60pt width)
+  - **Expanded (> 550px):** Number + emoji + name (80pt+ width)
+- Smooth transitions between modes as window is resized
+- Note indicators (orange dots) always visible in all modes
+- Maintains equal spacing and alignment across all modes
+
+**Files Modified:**
+- [x] `SuperSpacesHUDView.swift` - Added adaptive sizing logic
+  - Added `noteSelectorWidth` state variable to track container width
+  - Added `NoteButtonMode` enum (compact, medium, expanded)
+  - Modified `noteDisplayView` to use GeometryReader for width tracking
+  - Updated `noteSpaceButton()` to accept `availableWidth` parameter
+  - Added `getNoteButtonMode()` to calculate mode based on width
+  - Added `getNoteButtonWidth()` to return minimum width per mode
+
+**Visual Demo:**
+- [x] Created HTML interactive demo: `SuperSpacesHUDView-adaptive-buttons-demo.html`
+- Demo shows real-time button expansion as window width changes
+- Includes slider to test different window widths (300-800px)
+
+**User Experience:**
+- Window starts at default width (480px) showing medium mode
+- User can resize window wider → buttons expand to show full names
+- User can resize window narrower → buttons compact to save space
+- Responsive design adapts naturally to user's preferred window size
+- No configuration needed - works automatically
+
+#### 🔨 BUILD CHECK 5.5.6.5
+```bash
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [x] Build succeeds ✅
+- [x] No compilation errors ✅
+- [x] No linter warnings ✅
+
+#### 🧪 TEST CHECK 5.5.6.5
+- [x] Buttons show emoji/number only at narrow widths ✅
+- [x] Buttons expand to number+emoji at medium widths ✅
+- [x] Buttons expand to full name at wide widths ✅
+- [x] Transitions are smooth during window resize ✅
+- [x] Note indicators remain visible in all modes ✅
+- [x] Active space highlighting works in all modes ✅
+- [x] Double-click to switch Space works in all modes ✅
+
+#### 👀 REVIEW POINT 5.5.6.5
+- [x] Code is well-commented with technical details ✅
+- [x] Adaptive logic is efficient (calculates once per render) ✅
+- [x] UI remains clean and professional in all modes ✅
+- [x] Feature enhances usability without adding complexity ✅
+
+---
+
 #### 5.5.7 Keyboard Navigation & Polish ⬜
 
 **Goal:** Add keyboard shortcuts and polish interactions
