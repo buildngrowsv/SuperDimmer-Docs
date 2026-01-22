@@ -2311,6 +2311,71 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
+#### 5.5.9.6 Overview Mode Layout Improvements ✅ (Jan 21, 2026)
+
+**Goal:** Improve overview mode layout with better text box heights and single-column support
+
+**User Requirements:**
+- Increase max height for text boxes/notes in overview cards
+- Add single-column layout for narrow windows (better readability)
+- Ensure generous space for note editing
+
+**Implementation:**
+- [x] Increased minimum note editor height from 80pt to 100pt
+- [x] Added maximum note editor height of 300pt (prevents cards from becoming too tall)
+- [x] Added single-column layout for windows < 450pt wide
+- [x] Updated column thresholds:
+  - < 450pt: 1 column (NEW - single column for narrow windows)
+  - 450-700pt: 2 columns
+  - 700-1000pt: 3 columns
+  - 1000-1300pt: 4 columns
+  - >= 1300pt: 5 columns
+- [x] Updated ideal window height calculation for overview mode (250pt per card, max 700pt)
+
+**Files Modified:**
+- `SuperSpacesHUDView.swift`:
+  - Updated `getOverviewColumns()` to add single-column threshold at 450pt
+  - Updated note editor height calculation in `OverviewSpaceCardView`:
+    - Minimum: 100pt (increased from 80pt)
+    - Maximum: 300pt (NEW - prevents excessive card height)
+  - Updated `calculateHeight()` for overview mode:
+    - Card height: 250pt (increased from 150pt)
+    - Max window height: 700pt (increased from 550pt)
+  - Added detailed comments explaining design rationale
+
+**User Experience:**
+1. Overview Mode: Narrow windows (< 450pt) show single column for maximum card width
+2. Overview Mode: Note editors have generous height (100-300pt) for comfortable editing
+3. Overview Mode: Cards don't become excessively tall (capped at 300pt note height)
+4. Overview Mode: Better balance between vertical space and scrollability
+5. All modes: Improved readability and usability across different window sizes
+
+**Technical Notes:**
+- Single-column layout ensures cards have maximum width when window is narrow
+- Generous minimum height (100pt) allows for multi-line notes without scrolling
+- Maximum height (300pt) prevents cards from dominating the screen
+- Height calculation uses min/max to clamp values within acceptable range
+- Column threshold at 450pt chosen to trigger single-column at reasonable width
+
+#### 🔨 BUILD CHECK 5.5.9.6
+```bash
+cd /Users/ak/UserRoot/Github/SuperDimmer/SuperDimmer-Mac-App
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [x] Build succeeds ✅
+- [x] No compilation errors ✅
+- [x] No linker errors ✅
+
+#### 🧪 TEST CHECK 5.5.9.6
+- [ ] Overview mode: Single column layout appears when window < 450pt wide
+- [ ] Overview mode: Note editors have minimum 100pt height
+- [ ] Overview mode: Note editors don't exceed 300pt height
+- [ ] Overview mode: Cards have comfortable spacing for note editing
+- [ ] Overview mode: Smooth transition between 1-column and 2-column layouts
+- [ ] Overview mode: Text remains readable at all window sizes
+
+---
+
 #### 5.5.9.5 Super Spaces Quick Settings Simplification ✅ (Jan 21, 2026)
 
 **Goal:** Simplify quick settings UI to focus on essential controls
