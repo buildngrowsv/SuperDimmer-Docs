@@ -2006,7 +2006,107 @@ xcodebuild -scheme SuperDimmer -configuration Debug build
 
 ---
 
-#### 5.5.9 Integration & Menu Bar Access ⬜
+#### 5.5.9 Separate Mode Buttons & Per-Mode Window Size Persistence ✅
+
+**Status:** COMPLETED (Jan 21, 2026)  
+**Goal:** Replace single mode toggle with 3 separate buttons and save window size per mode
+
+**Why This Feature:**
+- Users resize the window differently for each mode (compact needs less space, note/overview need more)
+- Previous implementation had a single toggle button that cycled through modes
+- Users wanted direct access to each mode without cycling
+- Window would not remember the preferred size for each mode
+
+**Implementation Completed:**
+
+- [x] Added 3 separate mode buttons in HUD header (replacing single toggle)
+  - Compact mode button (list.bullet icon)
+  - Note mode button (note.text icon)
+  - Overview mode button (square.grid.2x2 icon)
+  - Active mode highlighted with accent color background
+  - Grouped in a pill-style button group
+
+- [x] Added per-mode window size persistence to SettingsManager
+  - `hudSizeCompact: CGSize?` - Stores last size for Compact mode
+  - `hudSizeNote: CGSize?` - Stores last size for Note mode
+  - `hudSizeOverview: CGSize?` - Stores last size for Overview mode
+  - Each stored as width/height pairs in UserDefaults
+  - Nil means use default size for that mode
+
+- [x] Implemented window resize tracking in SuperSpacesHUD
+  - Added `windowDidResize()` delegate method
+  - Debounced saves (0.5s delay) to avoid excessive UserDefaults writes
+  - Saves to appropriate mode setting based on current display mode
+  - Tracks current mode to know which setting to update
+
+- [x] Implemented size restoration on mode switch
+  - Added `restoreSizeForMode()` method in SuperSpacesHUD
+  - Animates window resize when switching modes (0.25s smooth transition)
+  - Keeps top-left corner fixed during resize (adjusts bottom-right)
+  - Falls back to default size if no saved size exists
+  - Default sizes: Compact (480×140), Note (480×400), Overview (600×550)
+
+- [x] Added mode change callback system
+  - `onModeChange` callback in SuperSpacesHUDView
+  - Triggers window resize when user clicks mode button
+  - Bridges SwiftUI view to NSPanel window resize logic
+
+**Files Modified:**
+- `SettingsManager.swift`:
+  - Added 6 new UserDefaults keys (width/height for each mode)
+  - Added 3 new @Published properties for window sizes
+  - Added initialization code to load saved sizes
+  
+- `SuperSpacesHUD.swift`:
+  - Added `sizeSaveTimer` for debounced size saves
+  - Added `windowDidResize()` delegate method
+  - Added `restoreSizeForMode()` method
+  - Added `handleModeChange()` callback handler
+  - Updated `setupContent()` to wire up mode change callback
+
+- `SuperSpacesHUDView.swift`:
+  - Replaced single toggle button with 3 separate mode buttons
+  - Added `onModeChange` callback property
+  - Added `switchToMode()` method
+  - Updated header layout with pill-style button group
+  - Each button shows active state with accent color
+
+**User Experience:**
+1. User clicks a mode button → Window smoothly resizes to saved size for that mode
+2. User resizes window → Size is saved for current mode after 0.5s
+3. User switches modes → Window remembers their preferred size for each mode
+4. First time using a mode → Window uses sensible default size
+5. Direct access to any mode without cycling through others
+
+**Technical Notes:**
+- Window resize animation keeps top-left corner fixed (macOS standard)
+- Debouncing prevents excessive UserDefaults writes during drag-resize
+- Each mode can have completely different window dimensions
+- Size validation ensures window stays within min/max constraints
+- Works seamlessly with existing position persistence
+
+#### 🔨 BUILD CHECK 5.5.9
+```bash
+cd /Users/ak/UserRoot/Github/SuperDimmer/SuperDimmer-Mac-App
+xcodebuild -scheme SuperDimmer -configuration Debug build
+```
+- [x] Build succeeds ✅
+- [x] No compilation errors ✅
+- [x] No linker errors ✅
+
+#### 🧪 TEST CHECK 5.5.9
+- [ ] Three mode buttons appear in HUD header
+- [ ] Active mode button is highlighted
+- [ ] Clicking mode button switches to that mode
+- [ ] Window resizes smoothly when switching modes
+- [ ] Window size is saved per mode
+- [ ] Saved sizes persist across app restarts
+- [ ] Default sizes used when no saved size exists
+- [ ] Window stays within min/max constraints
+
+---
+
+#### 5.5.10 Integration & Menu Bar Access ⬜
 
 **Goal:** Integrate Super Spaces into main app UI
 
