@@ -17,9 +17,9 @@
 
 ### Features Affected
 
-1. **Decay Dimming** (WindowInactivityTracker) - ✅ Fixed
-2. **Auto-Hide** (AppInactivityTracker) - ✅ Fixed  
-3. **Auto-Minimize** (AutoMinimizeManager) - ✅ Already Working
+1. **Decay Dimming** (WindowInactivityTracker) - ✅ Fixed (Idle + Space aware)
+2. **Auto-Hide** (AppInactivityTracker) - ✅ Fixed (Idle + Space aware)
+3. **Auto-Minimize** (AutoMinimizeManager) - ✅ Already Working (Idle aware only)
 
 ### Key Changes
 
@@ -100,6 +100,25 @@ let inactivity = now.timeIntervalSince(info.lastActiveTime)  // Includes idle ti
 
 // AFTER (FIXED):
 let inactivity = info.accumulatedInactivityTime  // Excludes idle time ✅
+```
+
+**SPACE-AWARE ENHANCEMENT (Jan 24, 2026):**
+Added space-aware tracking so apps only accumulate inactivity time when they have windows on the current Space:
+
+```swift
+// Check if app has windows on current space
+let allWindows = windowTracker.getVisibleWindows()
+var appsWithWindowsOnCurrentSpace = Set<String>()
+for window in allWindows {
+    if let bundleID = window.bundleID {
+        appsWithWindowsOnCurrentSpace.insert(bundleID)
+    }
+}
+
+// Only accumulate for apps on current space
+guard appsWithWindowsOnCurrentSpace.contains(bundleID) else {
+    continue  // App not on current space - don't accumulate
+}
 ```
 
 ### 3. AutoMinimizeManager (Auto-Minimize)
@@ -183,7 +202,9 @@ xcodebuild -project SuperDimmer.xcodeproj -scheme SuperDimmer -configuration Deb
    - Lines 84-100: Added idle tracking properties and timer
    - Lines 245-259: Modified `getInactivityDuration()` to return accumulated time
    - Lines 341-408: Added idle tracking and accumulation methods
-   - **Line 335 (Jan 24, 2026):** Fixed `getInactiveApps()` to use `accumulatedInactivityTime` instead of `lastActiveTime`
+   - **Line 335 (Jan 24, 2026):** Fixed `getInactiveApps()` to use `accumulatedInactivityTime`
+   - **Lines 93-109 (Jan 24, 2026):** Added space tracking properties
+   - **Lines 474-579 (Jan 24, 2026):** Added space-aware accumulation and tracking
 
 3. **BUILD_CHECKLIST.md**
    - Added section 2.13: Idle-Aware Timer Pause
@@ -291,6 +312,7 @@ xcodebuild -project SuperDimmer.xcodeproj -scheme SuperDimmer -configuration Deb
 - [x] Documentation updated (BUILD_CHECKLIST.md)
 - [x] Code comments explain "why" not just "what"
 - [x] **FIXED (Jan 24, 2026):** Auto-hide now properly uses accumulated time
+- [x] **ENHANCED (Jan 24, 2026):** Auto-hide now space-aware (only counts time on current space)
 
 ---
 
@@ -325,9 +347,27 @@ let inactivity = info.accumulatedInactivityTime
 
 **Impact:** Auto-hide now correctly only counts active usage time, not idle time.
 
+### January 24, 2026 - Space-Aware Auto-Hide Enhancement
+**Enhancement:** Auto-hide now only counts inactivity time for apps with windows on the current Space.
+
+**Why This Matters:** Without space awareness, apps on other Spaces would accumulate inactivity time even though they weren't visible. For example, working on Space 2 for 30 minutes would cause apps on Space 1 to be hidden, which is unexpected.
+
+**Implementation:** Modified `accumulateInactivityTime()` to:
+1. Query all visible windows via `WindowTrackerService`
+2. Build a set of bundle IDs with windows on current space
+3. Only accumulate time for apps in that set
+
+**Integration:**
+- Works alongside idle detection (both features are independent)
+- Timer pauses for BOTH idle periods AND when app is on different space
+- Similar to decay dimming's space-aware freezing (Jan 21, 2026)
+
+**Impact:** Auto-hide now respects macOS Spaces, making it more intuitive and less aggressive.
+
 ---
 
 *Implementation completed: January 22, 2026*
 *Bug fix applied: January 24, 2026*
+*Space-aware enhancement: January 24, 2026*
 *Build verified: SuperDimmer v1.0.4+*
-*Documentation: BUILD_CHECKLIST.md section 2.13*
+*Documentation: BUILD_CHECKLIST.md section 2.13, SPACE_AWARE_AUTO_HIDE.md*
